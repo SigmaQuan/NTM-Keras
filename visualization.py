@@ -2,7 +2,6 @@
 Visualization of Neural Turing Machines.
 """
 import matplotlib.pyplot as plt
-# import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 
 
@@ -44,7 +43,7 @@ def show_copy_data(target_sequence_10, output_sequence_10,
                    target_sequence_120, output_sequence_120,
                    image_file):
     # set figure size
-    plt.figure(figsize=(12, 4))
+    fig = plt.figure(figsize=(12, 4))
 
     # draw first line
     axes_target_10 = plt.subplot2grid((4, 11), (0, 0), colspan=1)
@@ -113,9 +112,10 @@ def show_copy_data(target_sequence_10, output_sequence_10,
     plt.show()
 
     # save image
-    pp = PdfPages(image_file)
-    plt.savefig(pp, format='pdf')
-    pp.close()
+    # pp = PdfPages(image_file)
+    # plt.savefig(pp, format='pdf')
+    # pp.close()
+    fig.savefig(image_file, dpi=75)
 
     # close plot GUI
     plt.close()
