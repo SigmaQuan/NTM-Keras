@@ -12,7 +12,7 @@ An attempt at replicating ["Neural Turing Machines"](http://arxiv.org/abs/1410.5
 
 ## Results
 **Copy**
-![alt_tag](experiment/figure_4.pdf)
+![alt_tag](experiment/figure_4.png)
 
 
 **Repeat Copy**
