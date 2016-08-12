@@ -68,7 +68,7 @@ def test_show_copy_data():
     print (input_sequence_120.shape[1]-1)/2
     print input_sequence_120
 
-    image_file = '../experiment/figure_4.pdf'
+    image_file = '../experiment/figure_4.png'
 
     visualization.show_copy_data(
         input_sequence_10[:, 0:(input_sequence_10.shape[1]-1)/2],
@@ -92,7 +92,7 @@ def test_show_memory_of_copy_task():
     adds = dataset.generate_random_binomial(16, 40)
     reads = dataset.generate_random_binomial(16, 40)
     write_weightings, read_weightings = dataset.generate_weightings(36, 40)
-    image_file = "figure_6.png"
+    image_file = "../experiment/figure_6.png"
     visualization.show_memory_of_copy_task(input_sequence, output_sequence,
                                            adds, reads,
                                            write_weightings, read_weightings,

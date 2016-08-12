@@ -122,13 +122,12 @@ def show_copy_data(target_sequence_10, output_sequence_10,
 
 
 def show_memory_of_copy_task(
-        input_sequence, output_squences,
+        input_sequence, output_squence,
         adds, reads,
         write_weightings, read_weightings,
         image_file):
-
     # set figure size
-    plt.figure(figsize=(10, 8))
+    fig = plt.figure(figsize=(10, 8))
 
     # draw first line
     axes_input = plt.subplot2grid((15, 2), (0, 0), rowspan=2)
@@ -137,7 +136,7 @@ def show_memory_of_copy_task(
     axes_input.set_yticks([])
     plt.title("Inputs")
     axes_output = plt.subplot2grid((15, 2), (0, 1), rowspan=2)
-    plt.imshow(output_squences, interpolation='none')
+    plt.imshow(output_squence, interpolation='none')
     axes_output.set_xticks([])
     axes_output.set_yticks([])
     plt.title("Outputs")
@@ -184,9 +183,7 @@ def show_memory_of_copy_task(
     plt.show()
 
     # save image
-    pp = PdfPages(image_file)
-    plt.savefig(pp, format='pdf')
-    pp.close()
+    fig.savefig(image_file, dpi=75)
 
     # close plot GUI
     plt.close()
