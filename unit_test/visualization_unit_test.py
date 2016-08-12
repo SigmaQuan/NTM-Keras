@@ -57,17 +57,21 @@ def test_show_copy_data():
     print input_sequence_10.size
     print (input_sequence_10.shape[1]-1)/2
 
+    image_file = '../experiment/figure_4.pdf'
+
     visualization.show_copy_data(
         input_sequence_10[:, 0:(input_sequence_10.shape[1]-1)/2],
-        output_sequence_10[:, 0:(output_sequence_10.shape[1]-1)/2],
+        output_sequence_10[:, (output_sequence_10.shape[1]+1)/2:output_sequence_10.shape[1]],
         input_sequence_20[:, 0:(input_sequence_20.shape[1]-1)/2],
-        output_sequence_20[:, 0:(output_sequence_20.shape[1]-1)/2],
+        output_sequence_20[:, (output_sequence_20.shape[1]+1)/2:output_sequence_20.shape[1]],
         input_sequence_30[:, 0:(input_sequence_30.shape[1]-1)/2],
-        output_sequence_30[:, 0:(output_sequence_30.shape[1]-1)/2],
+        output_sequence_30[:, (output_sequence_30.shape[1]+1)/2:output_sequence_30.shape[1]],
         input_sequence_50[:, 0:(input_sequence_50.shape[1]-1)/2],
-        output_sequence_50[:, 0:(output_sequence_50.shape[1]-1)/2],
+        output_sequence_50[:, (output_sequence_50.shape[1]+1)/2:output_sequence_50.shape[1]],
         input_sequence_120[:, 0:(input_sequence_120.shape[1]-1)/2],
-        output_sequence_120[:, 0:(output_sequence_120.shape[1]-1)/2])
+        output_sequence_120[:, (output_sequence_120.shape[1]+1)/2:output_sequence_120.shape[1]],
+        image_file
+    )
 
 
 if __name__ == "__main__":

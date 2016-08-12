@@ -3,6 +3,15 @@ contourf.
 """
 import numpy as np
 import matplotlib.pyplot as plt
+# import matplotlib.gridspec as gridspec
+from matplotlib.backends.backend_pdf import PdfPages
+
+
+def make_ticklabels_invisible(fig):
+    for i, ax in enumerate(fig.axes):
+        # ax.text(0.5, 0.5, "ax%d" % (i+1), va="center", ha="center")
+        for tl in ax.get_xticklabels() + ax.get_yticklabels():
+            tl.set_visible(False)
 
 
 def show(w, w_title):
@@ -127,33 +136,65 @@ def show_copy_data(target_sequence_10, output_sequence_10,
                    target_sequence_20, output_sequence_20,
                    target_sequence_30, output_sequence_30,
                    target_sequence_50, output_sequence_50,
-                   target_sequence_120, output_sequence_120):
+                   target_sequence_120, output_sequence_120,
+                   image_file):
+    # set figure size
+    plt.figure(figsize=(12, 4))
 
-    # show matrix of target sequence 10.
-    axes_w_target_10 = plt.subplot(2, 4, 1)
-    # axes_w_target_10.figsize=[8, 10]
-    # axes_w_target_10(figsize=(8, 10))
+    # draw first line
+    axes_target_10 = plt.subplot2grid((4, 11), (0, 0), colspan=1)
+    # axes_target_10.set_aspect('equal')
     plt.imshow(target_sequence_10)
-    axes_w_target_10.set_xticks([])
-    axes_w_target_10.set_yticks([])
-
-    # show matrix of target sequence 20.
-    axes_w_target_20 = plt.subplot(2, 4, 2)
+    # plt.grid()
+    axes_target_20 = plt.subplot2grid((4, 11), (0, 1), colspan=2)
+    # axes_target_20.set_aspect('equal')
     plt.imshow(target_sequence_20)
-    axes_w_target_20.set_xticks([])
-    axes_w_target_20.set_yticks([])
-
-    # show matrix of target sequence 30.
-    axes_w_target_30 = plt.subplot(2, 4, 3)
+    axes_target_30 = plt.subplot2grid((4, 11), (0, 3), colspan=3)
+    # axes_target_30.set_aspect('equal')
     plt.imshow(target_sequence_30)
-    axes_w_target_30.set_xticks([])
-    axes_w_target_30.set_yticks([])
-
-    # show matrix of target sequence 50.
-    axes_w_target_50 = plt.subplot(2, 4, 4)
+    axes_target_50 = plt.subplot2grid((4, 11), (0, 6), colspan=5)
     plt.imshow(target_sequence_50)
-    axes_w_target_50.set_xticks([])
-    axes_w_target_50.set_yticks([])
+    # axes_target_50.set_aspect('equal')
 
-    # show the six matrices.
+    # draw second line
+    axes_output_10 = plt.subplot2grid((4, 11), (1, 0), colspan=1)
+    plt.imshow(output_sequence_10)
+    axes_output_20 = plt.subplot2grid((4, 11), (1, 1), colspan=2)
+    plt.imshow(output_sequence_20)
+    axes_output_30 = plt.subplot2grid((4, 11), (1, 3), colspan=3)
+    plt.imshow(output_sequence_30)
+    axes_output_50 = plt.subplot2grid((4, 11), (1, 6), colspan=5)
+    plt.imshow(output_sequence_50)
+
+    # draw last two lines
+    axes_target_120 = plt.subplot2grid((4, 11), (2, 0), colspan=11)
+    plt.imshow(target_sequence_120)
+    axes_output_120 = plt.subplot2grid((4, 11), (3, 0), colspan=11)
+    plt.imshow(output_sequence_120)
+
+    # add text
+    plt.text(-2, 5, 'Outputs', ha='right')
+    plt.text(-2, -7.5, 'Targets', ha='right')
+    plt.text(-2, -20, 'Outputs', ha='right')
+    plt.text(-2, -32.5, 'Targets', ha='right')
+    plt.text(10, 12, 'Time $\longrightarrow$', ha='right')
+
+    # set tick labels invisible
+    make_ticklabels_invisible(plt.gcf())
+    # adjust spaces
+    plt.subplots_adjust(hspace=0.05, wspace=0.05, bottom=0.1, right=0.8, top=0.9)
+    # add color bars
+    # *rect* = [left, bottom, width, height]
+    cax = plt.axes([0.85, 0.125, 0.015, 0.75])
+    plt.colorbar(cax=cax)
+
+    # show figure
     plt.show()
+
+    # save image
+    pp = PdfPages(image_file)
+    plt.savefig(pp, format='pdf')
+    pp.close()
+
+    # close plot GUI
+    plt.close()
