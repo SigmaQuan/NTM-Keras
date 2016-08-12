@@ -52,10 +52,21 @@ def test_show_copy_data():
     input_sequence_120 = input_sequence_120.transpose()[:, 0:input_sequence_120.size/2]
     output_sequence_120 = output_sequence_120.transpose()[:, 0:output_sequence_120.size/2]
 
-    print input_sequence_10
-    # print output_sequence_10
-    print input_sequence_10.size
+    print "10"
     print (input_sequence_10.shape[1]-1)/2
+    print input_sequence_10
+    print "20"
+    print (input_sequence_20.shape[1]-1)/2
+    print input_sequence_20
+    print "30"
+    print (input_sequence_30.shape[1]-1)/2
+    print input_sequence_30
+    print "50"
+    print (input_sequence_50.shape[1]-1)/2
+    print input_sequence_50
+    print "120"
+    print (input_sequence_120.shape[1]-1)/2
+    print input_sequence_120
 
     image_file = '../experiment/figure_4.pdf'
 
@@ -74,18 +85,24 @@ def test_show_copy_data():
     )
 
 
+def test_show_memory_of_copy_task():
+    input_sequence, output_sequence = dataset.generate_copy_data(8, 20)
+    input_sequence = input_sequence.transpose()
+    output_sequence = output_sequence.transpose()
+    adds = dataset.generate_random_binomial(16, 40)
+    reads = dataset.generate_random_binomial(16, 40)
+    write_weightings, read_weightings = dataset.generate_weightings(36, 40)
+    image_file = "figure_6.png"
+    visualization.show_memory_of_copy_task(input_sequence, output_sequence,
+                                           adds, reads,
+                                           write_weightings, read_weightings,
+                                           image_file)
+
+
 if __name__ == "__main__":
     # test_show_matrix()
     # test_show_multi_matrix()
-    test_show_copy_data()
+    # test_show_copy_data()
+    test_show_memory_of_copy_task()
 
-    # import matplotlib.pyplot as plt
-    # nx = 3
-    # ny = 1
-    # dxs = 8.0
-    # dys = 6.0
-    # fig, ax = plt.subplots(ny, nx, sharey=True, figsize=(dxs*nx, dys*ny))
-    # for i in range(nx):
-    #     ax[i].plot([1, 2], [1, 2])
-    # fig.show()
 

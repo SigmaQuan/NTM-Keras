@@ -13,7 +13,8 @@ An attempt at replicating ["Neural Turing Machines"](http://arxiv.org/abs/1410.5
 ## Results
 **Copy**
 ![alt_tag](experiment/figure_4.png)
-
+**NTM Memory Use During the Copy Task**
+![alt_tag](experiment/figure_6.png)
 
 **Repeat Copy**
 (in progress)
