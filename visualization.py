@@ -1,6 +1,7 @@
 """
 contourf.
 """
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -117,6 +118,42 @@ def show_multi_matirix(w_z, w_z_title, u_z, u_z_title, w_r, w_r_title, u_r, u_r_
     matrix_size = "$:\ %d \\times\ %d$" % (len(u_h[0]), len(u_h))
     u_h_title += matrix_size
     plt.title(u_h_title)
+
+    # show the six matrices.
+    plt.show()
+
+
+def show_copy_data(target_sequence_10, output_sequence_10,
+                   target_sequence_20, output_sequence_20,
+                   target_sequence_30, output_sequence_30,
+                   target_sequence_50, output_sequence_50,
+                   target_sequence_120, output_sequence_120):
+
+    # show matrix of target sequence 10.
+    axes_w_target_10 = plt.subplot(2, 4, 1)
+    # axes_w_target_10.figsize=[8, 10]
+    # axes_w_target_10(figsize=(8, 10))
+    plt.imshow(target_sequence_10)
+    axes_w_target_10.set_xticks([])
+    axes_w_target_10.set_yticks([])
+
+    # show matrix of target sequence 20.
+    axes_w_target_20 = plt.subplot(2, 4, 2)
+    plt.imshow(target_sequence_20)
+    axes_w_target_20.set_xticks([])
+    axes_w_target_20.set_yticks([])
+
+    # show matrix of target sequence 30.
+    axes_w_target_30 = plt.subplot(2, 4, 3)
+    plt.imshow(target_sequence_30)
+    axes_w_target_30.set_xticks([])
+    axes_w_target_30.set_yticks([])
+
+    # show matrix of target sequence 50.
+    axes_w_target_50 = plt.subplot(2, 4, 4)
+    plt.imshow(target_sequence_50)
+    axes_w_target_50.set_xticks([])
+    axes_w_target_50.set_yticks([])
 
     # show the six matrices.
     plt.show()
