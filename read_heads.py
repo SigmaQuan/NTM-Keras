@@ -1,4 +1,4 @@
-import util
+from keras import backend as K
 
 
 def reading(memory_t, weight_t):
@@ -19,5 +19,5 @@ def reading(memory_t, weight_t):
     $$\textbf{r}_t \leftarrow \sum_{i=1}^{N}w_t(i)\textbf{M}_t(i)$$
     :return: the content reading from memory.
     """
-    r_t = memory_t * weight_t
+    r_t = K.dot(memory_t, weight_t)
     return r_t

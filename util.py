@@ -4,6 +4,7 @@ contourf.
 import matplotlib.pyplot as plt
 import numpy as np
 
+from keras import backend as K
 
 
 def show(w, w_title):
