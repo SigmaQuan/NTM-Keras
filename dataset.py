@@ -27,9 +27,9 @@ def generate_copy_data(input_size, sequence_length):
     sequence = np.random.binomial(
         1, 0.5, (sequence_length, input_size - 1)).astype(np.uint8)
     input_sequence = np.zeros(
-        (sequence_length * 2 + 1, input_size), dtype=np.float32)
+        (sequence_length * 2 + 1, input_size), dtype=np.bool)
     output_sequence = np.zeros(
-        (sequence_length * 2 + 1, input_size), dtype=np.float32)
+        (sequence_length * 2 + 1, input_size), dtype=np.bool)
 
     input_sequence[:sequence_length, :-1] = sequence
     input_sequence[sequence_length, -1] = 1
@@ -40,8 +40,8 @@ def generate_copy_data(input_size, sequence_length):
 
 def generate_copy_data_set(input_size, max_size, training_size):
     sequence_lengths = np.random.randint(1, max_size, training_size)
-    input_sequences = np.zeros((training_size, max_size*2+1, input_size), dtype=np.float32)
-    output_sequences = np.zeros((training_size, max_size*2+1, input_size), dtype=np.float32)
+    input_sequences = np.zeros((training_size, max_size*2+1, input_size), dtype=np.bool)
+    output_sequences = np.zeros((training_size, max_size*2+1, input_size), dtype=np.bool)
     for i in range(training_size):
         input_sequence, output_sequence = generate_copy_data(
             input_size, sequence_lengths[i])
@@ -75,14 +75,14 @@ def generate_repeat_copy_data(input_size, max_size, num_repeats):
     sequence = np.random.binomial(
         1, 0.5, (sequence_length, input_size - 1)).astype(np.uint8)
     input_sequence = np.zeros(
-        (sequence_length + 1 + sequence_length * num_repeats + 1, input_size), dtype=np.float32)
+        (sequence_length + 1 + sequence_length * num_repeats + 1, input_size), dtype=np.bool)
     output_sequence = np.zeros(
-        (sequence_length + 1 + sequence_length * num_repeats + 1, input_size), dtype=np.float32)
+        (sequence_length + 1 + sequence_length * num_repeats + 1, input_size), dtype=np.bool)
 
     input_sequence[:sequence_length, :-1] = sequence
     input_sequence[sequence_length, -1] = num_repeats
     output_sequence[sequence_length + 1:-1, :-
                     1] = np.tile(sequence, (num_repeats, 1))
     output_sequence[-1, -1] = 1
-    
+
     return input_sequence, output_sequence
