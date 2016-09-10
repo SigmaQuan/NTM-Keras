@@ -39,7 +39,7 @@ def generate_copy_data(input_size, sequence_length):
 
 
 def generate_copy_data_set(input_size, max_size, training_size):
-    sequence_lengths = np.random.randint(0, max_size, training_size)
+    sequence_lengths = np.random.randint(1, max_size, training_size)
     # X = np.zeros((len(questions), MAXLEN, len(chars)), dtype=np.bool)
     # y = np.zeros((len(questions), DIGITS + 1, len(chars)), dtype=np.bool)
     input_sequences = np.zeros((training_size, max_size*2+1, input_size), dtype=np.float32)
@@ -47,9 +47,11 @@ def generate_copy_data_set(input_size, max_size, training_size):
     for i in range(training_size):
         input_sequence, output_sequence = generate_copy_data(
             input_size, sequence_lengths[i])
-        for j in range(1, sequence_lengths[i]*2+1):
-            input_sequences[i][max_size*2+1-j] = input_sequence[sequence_lengths[i]*2+1-j]
-            output_sequences[i][max_size*2+1-j] = output_sequence[sequence_lengths[i]*2+1-j]
+        for j in range(sequence_lengths[i]*2+1):
+            index_1 = max_size*2+1-j-1
+            index_2 = sequence_lengths[i]*2+1-j-1
+            input_sequences[i][index_1] = input_sequence[index_2]
+            output_sequences[i][index_1] = output_sequence[index_2]
 
     return input_sequences, output_sequences
 

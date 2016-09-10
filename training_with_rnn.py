@@ -18,6 +18,7 @@ import dataset                               # Add by Steven Robot
 import visualization                         # Add by Steven
 from keras.utils.visualize_util import plot  # Add by Steven
 
+
 # Parameters for the model to train copying algorithm
 ###
 # TRAINING_SIZE = 128000
@@ -102,6 +103,15 @@ plot(model, show_shapes=True, to_file="experiment/model_simple_rnn_for_copying.p
 print("Training...")
 # Train the model each generation and show predictions against the
 # validation dataset
+matrix_list = []
+matrix_list.append(train_X[0].transpose())
+matrix_list.append(train_Y[0].transpose())
+matrix_list.append(train_Y[0].transpose())
+name_list = []
+name_list.append("Input")
+name_list.append("Target")
+name_list.append("Predict")
+show_matrix = visualization.PlotDynamicalMatrix(matrix_list, name_list)
 for iteration in range(1, 200):
     print()
     print('-' * 78)
@@ -114,7 +124,7 @@ for iteration in range(1, 200):
     ###
     # Select 3 samples from the validation set at random so we can
     # visualize errors
-    for i in range(1):
+    for i in range(128):
         ind = np.random.randint(0, len(valid_X))
         # inputs = valid_X[ind]
         # outputs = valid_Y[ind]
@@ -123,8 +133,15 @@ for iteration in range(1, 200):
         # print(inputs)
         # print(outputs)
         # print(predicts)
-        visualization.show_copy_data(outputs[0].transpose(),
-                                     predicts[0].transpose(),
-                                     "Target",
-                                     "Prediction",
-                                     "experiment/copy_data_predict_%3d.png"%iteration)
+        matrix_list_update = []
+        matrix_list_update.append(inputs[0].transpose())
+        matrix_list_update.append(outputs[0].transpose())
+        matrix_list_update.append(predicts[0].transpose())
+        # visualization.show_copy_data(outputs[0].transpose(),
+        #                              predicts[0].transpose(),
+        #                              "Target",
+        #                              "Prediction",
+        #                              "experiment/copy_data_predict_%3d.png"%iteration)
+
+        show_matrix.update(matrix_list_update, name_list)
+        show_matrix.save("experiment/copy_data_predict_%3d.png"%iteration)
