@@ -285,7 +285,7 @@ class PlotDynamicalMatrix:
         # show figure
         # plt.show()
         plt.draw()
-        plt.pause(0.025)
+        plt.pause(0.01)
         # plt.pause(15)
 
     def save(self, image_file):

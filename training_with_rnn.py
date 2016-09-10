@@ -21,10 +21,13 @@ from keras.utils.visualize_util import plot  # Add by Steven
 
 # Parameters for the model to train copying algorithm
 ###
-# TRAINING_SIZE = 128000
-TRAINING_SIZE = 1280
-INPUT_DIMENSION_SIZE = 8 + 1
-MAX_COPY_LENGTH = 20
+TRAINING_SIZE = 128000
+# TRAINING_SIZE = 1280
+INPUT_DIMENSION_SIZE = 4 + 1
+MAX_COPY_LENGTH = 10
+# TRAINING_SIZE = 1280
+# INPUT_DIMENSION_SIZE = 8 + 1
+# MAX_COPY_LENGTH = 20
 MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + MAX_COPY_LENGTH
 
 # Try replacing SimpleRNN, GRU, or LSTM
@@ -76,6 +79,8 @@ hidden_layer = RNN(
     init='glorot_uniform',
     inner_init='orthogonal',
     activation='tanh',
+    # activation='hard_sigmoid',
+    # activation='sigmoid',
     W_regularizer=None,
     U_regularizer=None,
     b_regularizer=None,
@@ -90,9 +95,13 @@ for _ in range(LAYERS):
 
 # For each of step of the output sequence, decide which character should be chosen
 model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE)))
-model.add(Activation('softmax'))
+# model.add(Activation('softmax'))
+# model.add(Activation('hard_sigmoid'))
+model.add(Activation('sigmoid'))
 
-model.compile(loss='categorical_crossentropy',
+
+model.compile(loss='binary_crossentropy',
+              # loss='mse',
               optimizer='adam',
               metrics=['accuracy'])
 
@@ -124,7 +133,7 @@ for iteration in range(1, 200):
     ###
     # Select 3 samples from the validation set at random so we can
     # visualize errors
-    for i in range(128):
+    for i in range(50):
         ind = np.random.randint(0, len(valid_X))
         # inputs = valid_X[ind]
         # outputs = valid_Y[ind]
@@ -145,3 +154,5 @@ for iteration in range(1, 200):
 
         show_matrix.update(matrix_list_update, name_list)
         show_matrix.save("experiment/copy_data_predict_%3d.png"%iteration)
+
+show_matrix.close()
