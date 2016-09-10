@@ -102,7 +102,7 @@ def test_show_memory_of_copy_task():
 if __name__ == "__main__":
     # test_show_matrix()
     # test_show_multi_matrix()
-    test_show_copy_data()
-    # test_show_memory_of_copy_task()
+    # test_show_copy_data()
+    test_show_memory_of_copy_task()
 
 

@@ -36,7 +36,51 @@ def make_tick_labels_invisible(fig):
             tl.set_visible(False)
 
 
-def show_copy_data(target_sequence_10, output_sequence_10,
+def show_copy_data(input_sequence, output_sequence, input_name, output_name, image_file):
+    # set figure size
+    fig = plt.figure(figsize=(7, 3))
+
+    # draw first line
+    axes_input_10 = plt.subplot2grid((2, 1), (0, 0), colspan=1)
+    axes_input_10.set_aspect('equal')
+    plt.imshow(input_sequence, interpolation='none')
+    axes_input_10.set_xticks([])
+    axes_input_10.set_yticks([])
+
+    # draw second line
+    axes_output_10 = plt.subplot2grid((2, 1), (1, 0), colspan=1)
+    plt.imshow(output_sequence, interpolation='none')
+    axes_output_10.set_xticks([])
+    axes_output_10.set_yticks([])
+
+    # add text
+    plt.text(-2, -4.5, input_name, ha='right')
+    plt.text(-2, 4, output_name, ha='right')
+    plt.text(6, 10, 'Time $\longrightarrow$', ha='right')
+
+    # set tick labels invisible
+    make_tick_labels_invisible(plt.gcf())
+    # adjust spaces
+    plt.subplots_adjust(hspace=0.05, wspace=0.05, bottom=0.1, right=0.8, top=0.9)
+    # add color bars
+    # *rect* = [left, bottom, width, height]
+    cax = plt.axes([0.85, 0.125, 0.015, 0.75])
+    plt.colorbar(cax=cax)
+
+    # show figure
+    # plt.show()
+
+    # save image
+    # pp = PdfPages(image_file)
+    # plt.savefig(pp, format='pdf')
+    # pp.close()
+    fig.savefig(image_file, dpi=75)
+
+    # close plot GUI
+    plt.close()
+
+
+def show_multi_copy_data(target_sequence_10, output_sequence_10,
                    target_sequence_20, output_sequence_20,
                    target_sequence_30, output_sequence_30,
                    target_sequence_50, output_sequence_50,
@@ -187,4 +231,3 @@ def show_memory_of_copy_task(
 
     # close plot GUI
     plt.close()
-
