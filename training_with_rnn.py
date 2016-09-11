@@ -21,7 +21,8 @@ from keras.utils.visualize_util import plot  # Add by Steven
 
 # Parameters for the model to train copying algorithm
 ###
-TRAINING_SIZE = 128000
+TRAINING_SIZE = 1024000
+# TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
 # INPUT_DIMENSION_SIZE = 4 + 1
 # MAX_COPY_LENGTH = 10
