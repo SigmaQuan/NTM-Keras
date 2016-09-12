@@ -34,6 +34,7 @@ def generate_copy_data(input_size, sequence_length):
     input_sequence[:sequence_length, :-1] = sequence
     input_sequence[sequence_length, -1] = 1
     output_sequence[sequence_length + 1:, :-1] = sequence
+    output_sequence[:sequence_length + 1, -1] = 1
 
     return input_sequence, output_sequence
 
@@ -46,10 +47,15 @@ def generate_copy_data_set(input_size, max_size, training_size):
         input_sequence, output_sequence = generate_copy_data(
             input_size, sequence_lengths[i])
         for j in range(sequence_lengths[i]*2+1):
-            index_1 = max_size*2+1-j-1
-            index_2 = sequence_lengths[i]*2+1-j-1
+            # index_1 = max_size*2+1-j-1
+            # index_2 = sequence_lengths[i]*2+1-j-1
+            index_1 = j
+            index_2 = j
             input_sequences[i][index_1] = input_sequence[index_2]
             output_sequences[i][index_1] = output_sequence[index_2]
+        for k in range(sequence_lengths[i]*2+1, max_size*2+1):
+            input_sequences[i][k][-1] = 1
+            output_sequences[i][k][-1] = 1
 
     return input_sequences, output_sequences
 

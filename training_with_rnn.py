@@ -36,7 +36,11 @@ MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + MAX_COPY_LENGTH
 RNN = recurrent.LSTM
 HIDDEN_SIZE = 128
 LAYERS = 1
-BATCH_SIZE = 128
+# BATCH_SIZE = 2048
+# BATCH_SIZE = 1024
+BATCH_SIZE = 512
+# BATCH_SIZE = 256
+# BATCH_SIZE = 128
 
 # print('Generating data...')
 # input_sequence, output_sequence = \
