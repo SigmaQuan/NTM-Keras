@@ -267,11 +267,11 @@ class PlotDynamicalMatrix:
         axes_predict.set_xticks([])
         axes_predict.set_yticks([])
 
-        # add text
-        plt.text(-2, -19.5, name_list[0], ha='right')
-        plt.text(-2, -7.5, name_list[1], ha='right')
-        plt.text(-2, 4.5, name_list[2], ha='right')
-        plt.text(6, 10, 'Time $\longrightarrow$', ha='right')
+        # # add text
+        # plt.text(-2, -19.5, name_list[0], ha='right')
+        # plt.text(-2, -7.5, name_list[1], ha='right')
+        # plt.text(-2, 4.5, name_list[2], ha='right')
+        # plt.text(6, 10, 'Time $\longrightarrow$', ha='right')
 
         # set tick labels invisible
         make_tick_labels_invisible(plt.gcf())
@@ -285,7 +285,7 @@ class PlotDynamicalMatrix:
         # show figure
         # plt.show()
         plt.draw()
-        plt.pause(0.01)
+        plt.pause(0.025)
         # plt.pause(15)
 
     def save(self, image_file):
