@@ -25,8 +25,10 @@ TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
 INPUT_DIMENSION_SIZE = 4 + 1
 MAX_COPY_LENGTH = 10
-REPEAT_TIMES = 2
-MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + REPEAT_TIMES * MAX_COPY_LENGTH + 1
+# REPEAT_TIMES = 2
+# MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + REPEAT_TIMES * MAX_COPY_LENGTH + 1
+MAX_REPEAT_TIMES = 5
+MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + MAX_REPEAT_TIMES * MAX_COPY_LENGTH + 1
 
 # Try replacing SimpleRNN, GRU, or LSTM
 # RNN = recurrent.SimpleRNN
@@ -34,16 +36,43 @@ MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + REPEAT_TIMES * MAX_COPY_LENGTH + 1
 RNN = recurrent.LSTM
 HIDDEN_SIZE = 128
 # HIDDEN_SIZE = 128*2
-LAYERS = 1
+# LAYERS = 1
+LAYERS = MAX_REPEAT_TIMES
 BATCH_SIZE = 1024
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Generating data sets...')
-train_X, train_Y = dataset.generate_repeat_copy_data_set(
-    INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE, REPEAT_TIMES)
-valid_X, valid_Y = dataset.generate_repeat_copy_data_set(
-    INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE/10, REPEAT_TIMES)
+# train_X, train_Y = dataset.generate_repeat_copy_data_set(
+#     INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE, REPEAT_TIMES)
+# valid_X, valid_Y = dataset.generate_repeat_copy_data_set(
+#     INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE/10, REPEAT_TIMES)
+train_X, train_Y, train_repeats_times = dataset.generate_repeat_copy_data_set(
+    INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE, MAX_REPEAT_TIMES)
+valid_X, valid_Y, valid_repeats_times = dataset.generate_repeat_copy_data_set(
+    INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE/10, MAX_REPEAT_TIMES)
+# train_repeats_times = (MAX_REPEAT_TIMES - train_repeats_times) / MAX_REPEAT_TIMES
+# train_repeats_times = (MAX_REPEAT_TIMES - train_repeats_times) / MAX_REPEAT_TIMES
+
+
+matrix_list = []
+matrix_list.append(train_X[0].transpose())
+matrix_list.append(train_Y[0].transpose())
+matrix_list.append(train_Y[0].transpose())
+name_list = []
+name_list.append("Input")
+name_list.append("Target")
+name_list.append("Predict")
+show_matrix = visualization.PlotDynamicalMatrix4Repeat(
+    matrix_list, name_list, train_repeats_times[0])
+random_index = np.random.randint(1, 128, 20)
+for i in range(20):
+    matrix_list_update = []
+    matrix_list_update.append(train_X[random_index[i]].transpose())
+    matrix_list_update.append(train_Y[random_index[i]].transpose())
+    matrix_list_update.append(train_Y[random_index[i]].transpose())
+    show_matrix.update(matrix_list_update, name_list, train_repeats_times[random_index[i]])
+    show_matrix.save("experiment/repeat_copy_data_training_%2d.png"%i)
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -88,21 +117,11 @@ print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Model architecture")
 plot(model, show_shapes=True, to_file="experiment/model_simple_rnn_for_copying.png")
 
-
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Training...")
 # Train the model each generation and show predictions against the
 # validation dataset
-matrix_list = []
-matrix_list.append(train_X[0].transpose())
-matrix_list.append(train_Y[0].transpose())
-matrix_list.append(train_Y[0].transpose())
-name_list = []
-name_list.append("Input")
-name_list.append("Target")
-name_list.append("Predict")
-show_matrix = visualization.PlotDynamicalMatrix(matrix_list, name_list)
 for iteration in range(1, 200):
     print()
     print('-' * 78)
@@ -111,12 +130,12 @@ for iteration in range(1, 200):
     model.fit(train_X,
               train_Y,
               batch_size=BATCH_SIZE,
-              nb_epoch=10,
+              nb_epoch=1,
               validation_data=(valid_X, valid_Y))
     ###
     # Select 3 samples from the validation set at random so we can
     # visualize errors
-    for i in range(10):
+    for i in range(20):
         ind = np.random.randint(0, len(valid_X))
         # inputs = valid_X[ind]
         # outputs = valid_Y[ind]
@@ -129,7 +148,7 @@ for iteration in range(1, 200):
         matrix_list_update.append(inputs[0].transpose())
         matrix_list_update.append(outputs[0].transpose())
         matrix_list_update.append(predicts[0].transpose())
-        show_matrix.update(matrix_list_update, name_list)
+        show_matrix.update(matrix_list_update, name_list, valid_repeats_times[ind])
         show_matrix.save("experiment/copy_data_predict_%3d.png"%iteration)
 
 show_matrix.close()
