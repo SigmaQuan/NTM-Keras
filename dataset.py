@@ -80,6 +80,7 @@ def generate_repeat_copy_data(input_size, sequence_length, repeat_times):
 
     return input_sequence, output_sequence
 
+
 # # Fixed repeat size
 # def generate_repeat_copy_data_set(input_size, max_size, training_size, repeat_times):
 #     sequence_lengths = np.random.randint(1, max_size + 1, training_size)
@@ -114,3 +115,68 @@ def generate_repeat_copy_data_set(input_size, max_size, training_size, max_repea
         # input_sequences[i][sequence_lengths[i]*(repeat_times+1)+1][-1] = 1
         output_sequences[i][sequence_lengths[i]*(repeat_times[i]+1)+1][-1] = 1
     return input_sequences, output_sequences, repeat_times
+
+
+def generate_associative_recall_items(input_size, item_size, episode_size):
+    inner_item = np.random.binomial(1, 0.5,
+                                    ((item_size + 1) * episode_size, input_size)
+                                    ).astype(np.uint8)
+    items = np.zeros(((item_size + 1) * episode_size, input_size + 2), dtype=np.uint8)
+    # item = np.zeros(((item_size + 1) * episode_size, input_size + 2), dtype=np.bool)
+    items[:, :-2] = inner_item
+
+    separator = np.zeros((1, input_size + 2), dtype=np.uint8)
+    # separator = np.zeros((1, input_size + 2), dtype=np.bool)
+    separator[0][-2] = 1
+    items[:(item_size + 1) * episode_size:(item_size + 1)] = separator[0]
+
+    return items
+
+
+def generate_associative_recall_data(
+        input_size, item_size, episode_size, max_episode_size):
+    sequence_length = (item_size+1) * (max_episode_size+2)
+    input_sequence = np.zeros(
+        (sequence_length, input_size + 2), dtype=np.uint8)
+    # input_sequence = np.zeros(
+    #     (sequence_length, input_size + 2), dtype=np.bool)
+    input_sequence[:(item_size + 1) * episode_size] = \
+        generate_associative_recall_items(input_size, item_size, episode_size)
+
+    separator = np.zeros((1, input_size+2), dtype=np.uint8)
+    # separator = np.zeros((1, input_size + 2), dtype=np.bool)
+    separator[0][-2] = 1
+    query_index = np.random.randint(0, episode_size-1)
+
+    input_sequence[(item_size+1)*episode_size:(item_size+1)*(episode_size+1)] = \
+        input_sequence[(item_size+1)*query_index:(item_size+1)*(query_index+1)]
+    input_sequence[(item_size+1)*(episode_size)][-2] = 0
+    input_sequence[(item_size+1)*(episode_size)][-1] = 1
+    input_sequence[(item_size+1)*(episode_size+1)][-1] = 1
+
+    output_sequence = np.zeros(
+        (sequence_length, input_size + 2), dtype=np.uint8)
+    # output_sequence = np.zeros(
+    #     (sequence_length, input_size + 2), dtype=np.bool)
+    output_sequence[(item_size+1)*(episode_size+1):(item_size+1)*(episode_size+2)] = \
+        input_sequence[(item_size+1)*(query_index+1):(item_size+1)*(query_index+2)]
+    output_sequence[(item_size+1)*(episode_size+1)][-2] = 0
+
+    return input_sequence, output_sequence
+
+
+def generate_repeat_copy_data_set(
+        input_size, item_size, max_episode_size, training_size):
+    episode_size = np.random.randint(2, max_episode_size + 1, training_size)
+    sequence_length = (item_size+1) * (max_episode_size+2)
+    input_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.uint8)
+    output_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.uint8)
+    # input_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
+    # output_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
+    for i in range(training_size):
+        input_sequence, output_sequence = generate_associative_recall_data(
+            input_size, item_size, episode_size[i], max_episode_size)
+        input_sequences[i] = input_sequence
+        output_sequences[i] = output_sequence
+
+    return input_sequences, output_sequences
