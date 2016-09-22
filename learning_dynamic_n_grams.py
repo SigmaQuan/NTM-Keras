@@ -90,29 +90,29 @@ train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
     look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE)
 print("dumping training x, y...")
 pickle.dump(train_X,
-            open("experiment/inputs/n_gram_train_x.txt", "wb"),
+            open("experiment/inputs/n_gram_train_X.txt", "wb"),
             True)
 pickle.dump(train_Y,
             open("experiment/inputs/n_gram_train_Y.txt", "wb"),
             True)
 print("loading training x, y...")
 train_X = pickle.load(
-    open("experiment/inputs/n_gram_train_x.txt", "rb"))
+    open("experiment/inputs/n_gram_train_X.txt", "rb"))
 train_Y = pickle.load(
     open("experiment/inputs/n_gram_train_Y.txt", "rb"))
 
 valid_X, valid_Y = dataset.generate_dynamical_n_gram_data_set(
-    look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE)
+    look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE/10)
 print("dumping validation x, y...")
 pickle.dump(valid_X,
-            open("experiment/inputs/n_gram_valid_x.txt", "wb"),
+            open("experiment/inputs/n_gram_valid_X.txt", "wb"),
             True)
 pickle.dump(valid_Y,
             open("experiment/inputs/n_gram_valid_Y.txt", "wb"),
             True)
 print("loading training x, y...")
 valid_X = pickle.load(
-            open("experiment/inputs/n_gram_valid_x.txt", "rb"))
+            open("experiment/inputs/n_gram_valid_X.txt", "rb"))
 valid_Y = pickle.load(
             open("experiment/inputs/n_gram_valid_Y.txt", "rb"))
 
