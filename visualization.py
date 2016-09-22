@@ -3,6 +3,7 @@ Visualization of Neural Turing Machines.
 """
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import numpy as np
 
 
 def show(w, w_title):
@@ -381,3 +382,51 @@ class PlotDynamicalMatrix4Repeat:
         # close plot GUI
         plt.close()
 
+
+
+class PlotDynamicalMatrix4NGram:
+    def __init__(self, matrix_input, matrix_output, matrix_predict):
+        """
+        Initialize the value of matrix.
+        :param matrix_list: a goup of matrix.
+        :return: non.
+        """
+        # set figure size
+        self.fig = plt.figure(figsize=(20.5, 1.5))
+        # self.fig = plt.figure()
+
+        plt.ion()
+        self.update(matrix_input, matrix_output, matrix_predict)
+
+    def update(self, matrix_input, matrix_output, matrix_predict):
+        # print(matrix_input[0])
+        matrix = np.zeros((3, len(matrix_input[0])), dtype=np.uint8)
+        matrix[0] = matrix_input[0]
+        matrix[1] = matrix_output[0]
+        matrix[2] = matrix_predict[0]
+        # print(matrix)
+
+        axes_w = plt.gca()
+        plt.imshow(matrix, interpolation='none')
+        plt.xlabel("$Time \longrightarrow$")
+        # plt.ylabel("$w_{2}$")
+        # axes_w.set_xticks([])
+        axes_w.set_yticks([])
+        # plt.title("N Gram")
+
+        # show figure
+        # plt.show()
+        plt.draw()
+        plt.pause(0.025)
+        # plt.pause(15)
+
+    def save(self, image_file):
+        # save image
+        # pp = PdfPages(image_file)
+        # plt.savefig(pp, format='pdf')
+        # pp.close()
+        self.fig.savefig(image_file, dpi=75)
+
+    def close(self):
+        # close plot GUI
+        plt.close()

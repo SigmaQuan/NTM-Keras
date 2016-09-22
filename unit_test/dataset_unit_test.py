@@ -82,7 +82,28 @@ def test_associative_recall_data():
         show_matrix.update(matrix_list_update, name_list)
         show_matrix.save("../experiment/inputs/associative_recall_data_training_%2d.png"%i)
 
+
+def test_n_gram_data():
+    a = 0.5
+    b = 0.5
+    n = 6
+    look_up_table = dataset.generate_probability_of_n_gram_by_beta(a, b, n)
+    sequence_length = 200
+    example_size = 10
+    train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
+        look_up_table, n, sequence_length, example_size)
+    # print(train_X)
+    show_matrix = visualization.PlotDynamicalMatrix4NGram(
+        train_X[0].transpose(), train_Y[0].transpose(), train_Y[0].transpose())
+
+    for i in range(example_size):
+        show_matrix.update(train_X[i].transpose(), train_Y[i].transpose(), train_Y[i].transpose())
+        show_matrix.save("../experiment/inputs/n_gram_data_training_%2d.png"%i)
+
+    show_matrix.close()
+
 if __name__ == "__main__":
     # test_copy_data_generation()
     # test_repeat_copy_data_generation()
-    test_associative_recall_data()
+    # test_associative_recall_data()
+    test_n_gram_data()

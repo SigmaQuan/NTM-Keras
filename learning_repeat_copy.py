@@ -20,16 +20,7 @@ import time                                  # Add by Steven Robot
 from keras.layers import Merge               # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
-
-
-class LossHistory(Callback):
-    def on_train_begin(self, logs={}):
-        self.losses = []
-        self.acces = []
-
-    def on_batch_end(self, batch, logs={}):
-        self.losses.append(logs.get('loss'))
-        self.acces.append(logs.get('acc'))
+from util import LossHistory                 # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm

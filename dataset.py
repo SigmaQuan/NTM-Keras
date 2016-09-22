@@ -40,11 +40,11 @@ def generate_copy_data(input_size, sequence_length):
     return input_sequence, output_sequence
 
 
-def generate_copy_data_set(input_size, max_size, training_size):
-    sequence_lengths = np.random.randint(1, max_size + 1, training_size)
-    input_sequences = np.zeros((training_size, max_size*2+1, input_size), dtype=np.bool)
-    output_sequences = np.zeros((training_size, max_size*2+1, input_size), dtype=np.bool)
-    for i in range(training_size):
+def generate_copy_data_set(input_size, max_size, example_size):
+    sequence_lengths = np.random.randint(1, max_size + 1, example_size)
+    input_sequences = np.zeros((example_size, max_size*2+1, input_size), dtype=np.bool)
+    output_sequences = np.zeros((example_size, max_size*2+1, input_size), dtype=np.bool)
+    for i in range(example_size):
         input_sequence, output_sequence = generate_copy_data(
             input_size, sequence_lengths[i])
         for j in range(sequence_lengths[i]*2+1):
@@ -99,12 +99,12 @@ def generate_repeat_copy_data(input_size, sequence_length, repeat_times):
 #     return input_sequences, output_sequences
 
 
-def generate_repeat_copy_data_set(input_size, max_size, training_size, max_repeat_times):
-    sequence_lengths = np.random.randint(1, max_size + 1, training_size)
-    repeat_times = np.random.randint(1, max_repeat_times + 1, training_size)
-    input_sequences = np.zeros((training_size, max_size*(max_repeat_times+1)+1+1, input_size), dtype=np.bool)
-    output_sequences = np.zeros((training_size, max_size*(max_repeat_times+1)+1+1, input_size), dtype=np.bool)
-    for i in range(training_size):
+def generate_repeat_copy_data_set(input_size, max_size, example_size, max_repeat_times):
+    sequence_lengths = np.random.randint(1, max_size + 1, example_size)
+    repeat_times = np.random.randint(1, max_repeat_times + 1, example_size)
+    input_sequences = np.zeros((example_size, max_size*(max_repeat_times+1)+1+1, input_size), dtype=np.bool)
+    output_sequences = np.zeros((example_size, max_size*(max_repeat_times+1)+1+1, input_size), dtype=np.bool)
+    for i in range(example_size):
         input_sequence, output_sequence = generate_repeat_copy_data(
             input_size, sequence_lengths[i], repeat_times[i])
         for j in range(sequence_lengths[i]*(repeat_times[i]+1)+1):
@@ -166,16 +166,58 @@ def generate_associative_recall_data(
 
 
 def generate_repeat_copy_data_set(
-        input_size, item_size, max_episode_size, training_size):
-    episode_size = np.random.randint(2, max_episode_size + 1, training_size)
+        input_size, item_size, max_episode_size, example_size):
+    episode_size = np.random.randint(2, max_episode_size + 1, example_size)
     sequence_length = (item_size+1) * (max_episode_size+2)
-    input_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.uint8)
-    output_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.uint8)
+    input_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
+    output_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
     # input_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
     # output_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
-    for i in range(training_size):
+    for i in range(example_size):
         input_sequence, output_sequence = generate_associative_recall_data(
             input_size, item_size, episode_size[i], max_episode_size)
+        input_sequences[i] = input_sequence
+        output_sequences[i] = output_sequence
+
+    return input_sequences, output_sequences
+
+
+def generate_probability_of_n_gram_by_beta(a, b, n):
+    return np.random.beta(a, b, np.power(2, n-1))
+
+
+def get_index(n_1_bits, n):
+    index = n_1_bits[0]
+    for i in range(1, n-1):
+        index = index + np.power(2, i) * n_1_bits[i]
+
+    return index
+
+
+def generate_dynamical_n_gram_data(look_up_table, n, sequence_length):
+    input_size = 1
+    input_sequence = np.zeros((sequence_length, input_size), dtype=np.uint8)
+    output_sequence = np.zeros((sequence_length, input_size), dtype=np.uint8)
+    input_sequence[0: n-1] = np.random.binomial(1, 0.5, (n-1, 1)).astype(np.uint8)
+    for i in range(n-1, sequence_length):
+        n_1_bits = input_sequence[i-n+1: i]
+        index = get_index(n_1_bits, n)
+        input_sequence[i] = np.random.binomial(1, look_up_table[index], 1)
+    output_sequence[n-1: -1] = input_sequence[n-1: -1]
+
+    return input_sequence, output_sequence
+
+
+def generate_dynamical_n_gram_data_set(
+        look_up_table, n, sequence_length, example_size):
+    input_size = 1
+    input_sequences = np.zeros((example_size, sequence_length, input_size), dtype=np.uint8)
+    output_sequences = np.zeros((example_size, sequence_length, input_size), dtype=np.uint8)
+    # input_sequences = np.zeros((example_size, sequence_length, 1), dtype=np.bool)
+    # output_sequences = np.zeros((example_size, sequence_length, 1), dtype=np.bool)
+    for i in range(example_size):
+        input_sequence, output_sequence = generate_dynamical_n_gram_data(
+            look_up_table, n, sequence_length)
         input_sequences[i] = input_sequence
         output_sequences[i] = output_sequence
 
