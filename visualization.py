@@ -440,7 +440,7 @@ class PlotDynamicalMatrix4PrioritySort:
         :return: non.
         """
         # set figure size
-        self.fig = plt.figure(figsize=(5.5, 7))
+        self.fig = plt.figure(figsize=(6, 5))
         # self.fig = plt.figure()
 
         plt.ion()
@@ -497,8 +497,8 @@ class PlotDynamicalMatrix4PrioritySort:
         # show figure
         # plt.show()
         plt.draw()
-        # plt.pause(0.025)
-        plt.pause(5)
+        plt.pause(0.025)
+        # plt.pause(1)
 
 
     def save(self, image_file):
