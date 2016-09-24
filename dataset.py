@@ -228,3 +228,54 @@ def generate_dynamical_n_gram_data_set(
         output_sequences[i] = output_sequence
 
     return input_sequences, output_sequences
+
+
+
+def generate_associative_priority_sort_data(
+        input_size,
+        input_sequence_length,
+        output_sequence_length,
+        priority_lower_bound,
+        priority_upper_bound):
+    input_sequence = np.random.binomial(
+        1, 0.5, (input_sequence_length, input_size)).astype(np.uint8)
+    output_sequence = np.zeros((output_sequence_length, input_size), dtype=np.uint8)
+    input_priority = np.random.uniform(priority_lower_bound,
+                                       priority_upper_bound,
+                                       (input_sequence_length, 1))
+    pair = [(input_sequence(i), input_priority[i]) for i in range(input_sequence_length)]
+    sorted_input_sequence = sorted(pair, key=lambda prior: prior[1])
+    sorted()
+
+    return input_sequence, \
+           input_priority, \
+           [sorted_input_sequence(i)[0] for i in range(output_sequence)],\
+           [sorted_input_sequence(i)[1] for i in range(output_sequence)]
+
+
+
+def generate_associative_priority_sort_data_set(
+        input_size,
+        input_sequence_length,
+        output_sequence_length,
+        priority_lower_bound,
+        priority_upper_bound,
+        example_size):
+    input_sequences = np.zeros((example_size, input_sequence_length, input_size), dtype=np.uint8)
+    output_sequences = np.zeros((example_size, output_sequence_length, input_size), dtype=np.uint8)
+    input_priorities = np.zeros((example_size, input_sequence_length, 1), dtype=np.float32)
+    output_priorities = np.zeros((example_size, output_sequence_length, 1), dtype=np.float32)
+    for i in range(example_size):
+        input_sequence, input_priority, output_sequence, output_priority = \
+            generate_associative_priority_sort_data(
+                input_size,
+                input_sequence_length,
+                output_sequence_length,
+                priority_lower_bound,
+                priority_upper_bound)
+        input_sequences[i] = input_sequence
+        output_sequences[i] = output_sequence
+        input_priorities[i] = input_priority
+        output_priorities[i] = output_priority
+
+    return input_sequences, input_priorities, output_sequences, output_priorities

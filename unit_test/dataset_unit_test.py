@@ -1,5 +1,7 @@
 import dataset
 import visualization
+import numpy as np
+
 
 def test_copy_data_generation():
     input_sequence, output_sequence = dataset.generate_copy_data(8, 10)
@@ -102,8 +104,47 @@ def test_n_gram_data():
 
     show_matrix.close()
 
+
+def test_priority_sort_data():
+    input_size = 8
+    input_sequence_length = 20
+    output_sequence_length = 16
+    priority_lower_bound = -1
+    priority_upper_bound = 1
+    example_size = 10
+
+    train_X_seq, train_X_priority, train_Y, train_X_priority = \
+        dataset.generate_associative_priority_sort_data_set(
+            input_size,
+            input_sequence_length,
+            output_sequence_length,
+            priority_lower_bound,
+            priority_upper_bound,
+            example_size)
+
+    input_matrix = np.zeros((input_sequence_length, input_size+1), dtype=np.uint8)
+    input_matrix[:-2] = train_X_seq[0]
+    input_matrix[:-1] = train_X_priority[0]
+    output_matrix = np.zeros((input_sequence_length, input_size+1), dtype=np.uint8)
+    output_matrix[:-2] = train_Y[0]
+    output_matrix[:-1] = train_X_priority[0]
+
+
+    show_matrix = visualization.PlotDynamicalMatrix4PrioritySort(
+        input_matrix[0].transpose(), output_matrix[0].transpose(), output_matrix[0].transpose())
+
+    for i in range(example_size):
+        show_matrix.update(input_matrix[i].transpose(),
+                           output_matrix[i].transpose(),
+                           output_matrix[i].transpose())
+        show_matrix.save("../experiment/inputs/priority_data_training_%2d.png"%i)
+
+    show_matrix.close()
+
+
 if __name__ == "__main__":
     # test_copy_data_generation()
     # test_repeat_copy_data_generation()
     # test_associative_recall_data()
-    test_n_gram_data()
+    # test_n_gram_data()
+    test_priority_sort_data()

@@ -430,3 +430,85 @@ class PlotDynamicalMatrix4NGram:
     def close(self):
         # close plot GUI
         plt.close()
+
+
+
+class PlotDynamicalMatrix4PrioritySort:
+    def __init__(self, matrix_input, matrix_output, matrix_predict):
+        """
+        Initialize the value of matrix.
+        :param matrix_list: a goup of matrix.
+        :return: non.
+        """
+        # set figure size
+        self.fig = plt.figure(figsize=(12.5, 8))
+        # self.fig = plt.figure()
+
+        plt.ion()
+        self.update(matrix_input, matrix_output, matrix_predict)
+
+    def update(self, matrix_input, matrix_output, matrix_predict):
+
+        # draw first line
+        axes_input = plt.subplot2grid((3, 1), (0, 0), colspan=1)
+        axes_input.set_aspect('equal')
+        plt.imshow(matrix_input, interpolation='none')
+        axes_input.set_xticks([])
+        axes_input.set_yticks([])
+
+        # draw second line
+        axes_output = plt.subplot2grid((3, 1), (1, 0), colspan=1)
+        plt.imshow(matrix_output, interpolation='none')
+        axes_output.set_xticks([])
+        axes_output.set_yticks([])
+
+        # draw third line
+        axes_predict = plt.subplot2grid((3, 1), (2, 0), colspan=1)
+        plt.imshow(matrix_predict, interpolation='none')
+        axes_predict.set_xticks([])
+        axes_predict.set_yticks([])
+        # for 8bits 20length
+        # # add text
+        # plt.text(-2, -22, name_list[0], ha='right')
+        # plt.text(-2, -9, name_list[1], ha='right')
+        # plt.text(-2, 4.5, name_list[2], ha='right')
+        # plt.text(12, 12, 'Time $\longrightarrow$', ha='right')
+        #
+        # title = "Repeat Times = %d"%repeat_times
+        # plt.text(60, -30, title, ha='center')
+        # # plt.title(title)
+        #
+
+        # add text
+        plt.text(-2, -11.3, "Input", ha='right')
+        plt.text(-2, -4.8, "Output", ha='right')
+        plt.text(-2, 2, "Predict", ha='right')
+        plt.text(5.5, 6, 'Time $\longrightarrow$', ha='right')
+        # plt.title(title)
+
+        # set tick labels invisible
+        make_tick_labels_invisible(plt.gcf())
+        # adjust spaces
+        plt.subplots_adjust(hspace=0.05, wspace=0.05, bottom=0.1, right=0.8, top=0.9)
+        # add color bars
+        # *rect* = [left, bottom, width, height]
+        cax = plt.axes([0.85, 0.125, 0.015, 0.75])
+        plt.colorbar(cax=cax)
+
+        # show figure
+        # plt.show()
+        plt.draw()
+        plt.pause(0.025)
+        # plt.pause(15)
+
+
+    def save(self, image_file):
+        # save image
+        # pp = PdfPages(image_file)
+        # plt.savefig(pp, format='pdf')
+        # pp.close()
+        self.fig.savefig(image_file, dpi=75)
+
+    def close(self):
+        # close plot GUI
+        plt.close()
