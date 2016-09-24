@@ -50,9 +50,10 @@ import os
 
 
 # Parameters for the model to train dynamic N Gram
-# EXAMPLE_SIZE = 1024000
-# EXAMPLE_SIZE = 128000
-EXAMPLE_SIZE = 1280
+# EXAMPLE_SIZE = 1024000   # need 70000 seconds to genarate these sequences
+EXAMPLE_SIZE = 128000  # need 700 seconds to genarate these sequences
+# EXAMPLE_SIZE = 12800  # need 70 seconds to genarate these sequences
+# EXAMPLE_SIZE = 1280  # need 7 seconds to genarate these sequences
 A = 0.5
 B = 0.5
 N_GRAM_SIZE = 6
@@ -63,58 +64,86 @@ INPUT_LENGTH = 200
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
 RNN = recurrent.LSTM
-HIDDEN_SIZE = 128*2
+HIDDEN_SIZE = 128*4    # 3152385*4B/1024/1024=12MB
+# HIDDEN_SIZE = 128*8    # 12596225*4B/1024/1024=48MB
+# HIDDEN_SIZE = 128*16   # 50358273*4B/1024/1024=192MB
+# HIDDEN_SIZE = 128*32   # 2,0137,9841*4B/1024/1024=768MB
+# HIDDEN_SIZE = 128*40   # 3,1463,9361*4/1024/1024=1200MB
+# HIDDEN_SIZE = 128*128  # MemoryError: ('Error allocating 1073741824 bytes
+# of device memory (CNMEM_STATUS_OUT_OF_MEMORY).',
+# "you might consider using 'theano.shared(..., borrow=True)'")
 LAYERS = 1
 # LAYERS = MAX_REPEAT_TIMES
-BATCH_SIZE = 1024
-# BATCH_SIZE = 128
+# BATCH_SIZE = 1024
+# BATCH_SIZE = 128  # if the batch size is larger than example size the
+                  # CUDA will report error
+
+BATCH_SIZE = 8  # if the batch size is large and the hidden size is 128*16 the
+                  # CUDA will report error
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Generating data sets...')
+print('  generating look up table...')
 look_up_table = dataset.generate_probability_of_n_gram_by_beta(
     A, B, N_GRAM_SIZE)
 print(look_up_table)
-print("dumping look up table...")
+print("  dumping look up table...")
 pickle.dump(look_up_table,
             # open("experiment/inputs/n_gram_look_up_table.txt", "w"),
             open("experiment/inputs/n_gram_look_up_table.txt", "wb"),
             True)
-print("loading look up table...")
+print("  loading look up table...")
 look_up_table = pickle.load(
     open("experiment/inputs/n_gram_look_up_table.txt", "rb"))  # "rb"
-print("Look_up_table = ")
+print("  Look_up_table = ")
 print(look_up_table)
 
+print(time.strftime('%Y-%m-%d %H:%M:%S'))
+print('  generating training x, y...')
 train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
     look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE)
-print("dumping training x, y...")
+print("  dumping training x, y...")
 pickle.dump(train_X,
             open("experiment/inputs/n_gram_train_X.txt", "wb"),
             True)
 pickle.dump(train_Y,
             open("experiment/inputs/n_gram_train_Y.txt", "wb"),
             True)
-print("loading training x, y...")
+print("  loading training x, y...")
 train_X = pickle.load(
     open("experiment/inputs/n_gram_train_X.txt", "rb"))
 train_Y = pickle.load(
     open("experiment/inputs/n_gram_train_Y.txt", "rb"))
 
+print(time.strftime('%Y-%m-%d %H:%M:%S'))
+print("  train_X.shape = ")
+print(train_X.shape)
+print("  train_Y.shape = ")
+print(train_Y.shape)
+
+print(time.strftime('%Y-%m-%d %H:%M:%S'))
+print('  generating validation x, y...')
 valid_X, valid_Y = dataset.generate_dynamical_n_gram_data_set(
     look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE/10)
-print("dumping validation x, y...")
+print("  dumping validation x, y...")
 pickle.dump(valid_X,
             open("experiment/inputs/n_gram_valid_X.txt", "wb"),
             True)
 pickle.dump(valid_Y,
             open("experiment/inputs/n_gram_valid_Y.txt", "wb"),
             True)
-print("loading training x, y...")
+print("  loading training x, y...")
 valid_X = pickle.load(
             open("experiment/inputs/n_gram_valid_X.txt", "rb"))
 valid_Y = pickle.load(
             open("experiment/inputs/n_gram_valid_Y.txt", "rb"))
+
+print(time.strftime('%Y-%m-%d %H:%M:%S'))
+print("  valid_X.shape = ")
+print(valid_X.shape)
+print("  valid_Y.shape = ")
+print(valid_Y.shape)
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -122,7 +151,7 @@ print('Showing data sets...')
 # show training sample
 show_matrix = visualization.PlotDynamicalMatrix4NGram(
     train_X[0].transpose(), train_Y[0].transpose(), train_Y[0].transpose())
-show_size = 20
+show_size = EXAMPLE_SIZE/10
 random_index = np.random.randint(1, EXAMPLE_SIZE, show_size)
 for i in range(show_size):
     show_matrix.update(
@@ -198,12 +227,12 @@ for iteration in range(1, 200):
               batch_size=BATCH_SIZE,
               nb_epoch=1,
               # nb_epoch=1,
-              callbacks=[check_pointer, history],
+              # callbacks=[check_pointer, history],
               validation_data=(valid_X, valid_Y))
-    print(len(history.losses))
-    print(history.losses)
-    print(len(history.acces))
-    print(history.acces)
+    # print(len(history.losses))
+    # print(history.losses)
+    # print(len(history.acces))
+    # print(history.acces)
 
     ###
     # Select 20 samples from the validation set at random so we can

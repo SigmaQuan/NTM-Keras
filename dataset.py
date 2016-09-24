@@ -199,11 +199,17 @@ def generate_dynamical_n_gram_data(look_up_table, n, sequence_length):
     input_sequence = np.zeros((sequence_length, input_size), dtype=np.uint8)
     output_sequence = np.zeros((sequence_length, input_size), dtype=np.uint8)
     input_sequence[0: n-1] = np.random.binomial(1, 0.5, (n-1, 1)).astype(np.uint8)
+    # for i in range(n-1, sequence_length):
+    #     n_1_bits = input_sequence[i-n+1: i]
+    #     index = get_index(n_1_bits, n)
+    #     input_sequence[i] = np.random.binomial(1, look_up_table[index], 1)
+    # output_sequence[n-1: -1] = input_sequence[n-1: -1]
+
     for i in range(n-1, sequence_length):
         n_1_bits = input_sequence[i-n+1: i]
         index = get_index(n_1_bits, n)
         input_sequence[i] = np.random.binomial(1, look_up_table[index], 1)
-    output_sequence[n-1: -1] = input_sequence[n-1: -1]
+        output_sequence[i] = np.random.binomial(1, look_up_table[index], 1)
 
     return input_sequence, output_sequence
 
