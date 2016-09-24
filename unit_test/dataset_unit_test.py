@@ -82,7 +82,7 @@ def test_associative_recall_data():
         matrix_list_update.append(train_Y[i].transpose())
         matrix_list_update.append(train_Y[i].transpose())
         show_matrix.update(matrix_list_update, name_list)
-        show_matrix.save("../experiment/inputs/associative_recall_data_training_%2d.png"%i)
+        show_matrix.save("../experiment/associative_recall_data_training_%2d.png"%i)
 
 
 def test_n_gram_data():
@@ -100,7 +100,7 @@ def test_n_gram_data():
 
     for i in range(example_size):
         show_matrix.update(train_X[i].transpose(), train_Y[i].transpose(), train_Y[i].transpose())
-        show_matrix.save("../experiment/inputs/n_gram_data_training_%2d.png"%i)
+        show_matrix.save("../experiment/n_gram_data_training_%2d.png"%i)
 
     show_matrix.close()
 
@@ -112,8 +112,10 @@ def test_priority_sort_data():
     priority_lower_bound = -1
     priority_upper_bound = 1
     example_size = 10
+    input_matrix = np.zeros((input_sequence_length, input_size+1), dtype=np.float32)
+    output_matrix = np.zeros((output_sequence_length, input_size+1), dtype=np.float32)
 
-    train_X_seq, train_X_priority, train_Y, train_X_priority = \
+    train_x_seq, train_x_priority, train_y_seq, train_y_priority = \
         dataset.generate_associative_priority_sort_data_set(
             input_size,
             input_sequence_length,
@@ -122,22 +124,23 @@ def test_priority_sort_data():
             priority_upper_bound,
             example_size)
 
-    input_matrix = np.zeros((input_sequence_length, input_size+1), dtype=np.uint8)
-    input_matrix[:-2] = train_X_seq[0]
-    input_matrix[:-1] = train_X_priority[0]
-    output_matrix = np.zeros((input_sequence_length, input_size+1), dtype=np.uint8)
-    output_matrix[:-2] = train_Y[0]
-    output_matrix[:-1] = train_X_priority[0]
-
-
+    input_matrix[:, :-1] = train_x_seq[0]
+    input_matrix[:, -1] = train_x_priority[0].reshape(input_sequence_length)
+    output_matrix[:, :-1] = train_y_seq[0]
+    output_matrix[:, -1] = train_y_priority[0].reshape(output_sequence_length)
     show_matrix = visualization.PlotDynamicalMatrix4PrioritySort(
-        input_matrix[0].transpose(), output_matrix[0].transpose(), output_matrix[0].transpose())
-
+        input_matrix.transpose(),
+        output_matrix.transpose(),
+        output_matrix.transpose())
     for i in range(example_size):
-        show_matrix.update(input_matrix[i].transpose(),
-                           output_matrix[i].transpose(),
-                           output_matrix[i].transpose())
-        show_matrix.save("../experiment/inputs/priority_data_training_%2d.png"%i)
+        input_matrix[:, :-1] = train_x_seq[i]
+        input_matrix[:, -1] = train_x_priority[i].reshape(input_sequence_length)
+        output_matrix[:, :-1] = train_y_seq[i]
+        output_matrix[:, -1] = train_y_priority[i].reshape(output_sequence_length)
+        show_matrix.update(input_matrix.transpose(),
+                           output_matrix.transpose(),
+                           output_matrix.transpose())
+        show_matrix.save("../experiment/priority_data_training_%2d.png"%i)
 
     show_matrix.close()
 

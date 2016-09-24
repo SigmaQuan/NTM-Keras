@@ -230,7 +230,6 @@ def generate_dynamical_n_gram_data_set(
     return input_sequences, output_sequences
 
 
-
 def generate_associative_priority_sort_data(
         input_size,
         input_sequence_length,
@@ -243,15 +242,15 @@ def generate_associative_priority_sort_data(
     input_priority = np.random.uniform(priority_lower_bound,
                                        priority_upper_bound,
                                        (input_sequence_length, 1))
-    pair = [(input_sequence(i), input_priority[i]) for i in range(input_sequence_length)]
-    sorted_input_sequence = sorted(pair, key=lambda prior: prior[1])
-    sorted()
+    output_priority = sorted(input_priority, reverse=True)[:output_sequence_length]
+    pair = [(input_sequence[i], input_priority[i]) for i in range(input_sequence_length)]
+    sorted_input_sequence = sorted(pair, key=lambda prior: prior[1], reverse=True)
+    # print(sorted_input_sequence[0][0])
+    # sorted_input_sequence[0][0]
+    for i in range(output_sequence_length):
+        output_sequence[i] = sorted_input_sequence[i][0]
 
-    return input_sequence, \
-           input_priority, \
-           [sorted_input_sequence(i)[0] for i in range(output_sequence)],\
-           [sorted_input_sequence(i)[1] for i in range(output_sequence)]
-
+    return input_sequence, input_priority, output_sequence, output_priority
 
 
 def generate_associative_priority_sort_data_set(

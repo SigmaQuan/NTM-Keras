@@ -383,7 +383,6 @@ class PlotDynamicalMatrix4Repeat:
         plt.close()
 
 
-
 class PlotDynamicalMatrix4NGram:
     def __init__(self, matrix_input, matrix_output, matrix_predict):
         """
@@ -441,7 +440,7 @@ class PlotDynamicalMatrix4PrioritySort:
         :return: non.
         """
         # set figure size
-        self.fig = plt.figure(figsize=(12.5, 8))
+        self.fig = plt.figure(figsize=(5.5, 7))
         # self.fig = plt.figure()
 
         plt.ion()
@@ -479,12 +478,12 @@ class PlotDynamicalMatrix4PrioritySort:
         # # plt.title(title)
         #
 
-        # add text
-        plt.text(-2, -11.3, "Input", ha='right')
-        plt.text(-2, -4.8, "Output", ha='right')
-        plt.text(-2, 2, "Predict", ha='right')
-        plt.text(5.5, 6, 'Time $\longrightarrow$', ha='right')
-        # plt.title(title)
+        # # add text
+        # plt.text(-2, -11.3, "Input", ha='right')
+        # plt.text(-2, -4.8, "Output", ha='right')
+        # plt.text(-2, 2, "Predict", ha='right')
+        # plt.text(5.5, 6, 'Time $\longrightarrow$', ha='right')
+        # # plt.title(title)
 
         # set tick labels invisible
         make_tick_labels_invisible(plt.gcf())
@@ -498,8 +497,8 @@ class PlotDynamicalMatrix4PrioritySort:
         # show figure
         # plt.show()
         plt.draw()
-        plt.pause(0.025)
-        # plt.pause(15)
+        # plt.pause(0.025)
+        plt.pause(5)
 
 
     def save(self, image_file):
