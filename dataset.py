@@ -236,31 +236,33 @@ def generate_associative_priority_sort_data(
         output_sequence_length,
         priority_lower_bound,
         priority_upper_bound):
-    sequence = input_sequence_length + output_sequence_length
+    sequence = input_sequence_length + output_sequence_length + 1
     input_sequence = np.random.binomial(
-        1, 0.5, (input_sequence_length, input_size)).astype(np.uint8)
-    output_sequence = np.zeros((output_sequence_length, input_size), dtype=np.uint8)
+        1, 0.5, (input_sequence_length, input_size+1)).astype(np.uint8)
+    output_sequence = np.zeros(
+        (output_sequence_length, input_size+1), dtype=np.uint8)
     input_priority = np.random.uniform(priority_lower_bound,
                                        priority_upper_bound,
                                        (input_sequence_length, 1))
-    output_priority = sorted(input_priority, reverse=True)[:output_sequence_length]
-    pair = [(input_sequence[i], input_priority[i]) for i in range(input_sequence_length)]
-    sorted_input_sequence = sorted(pair, key=lambda prior: prior[1], reverse=True)
-    # print(sorted_input_sequence[0][0])
-    # sorted_input_sequence[0][0]
+    output_priority = sorted(
+        input_priority, reverse=True)[:output_sequence_length]
+    pair = [(input_sequence[i], input_priority[i])
+            for i in range(input_sequence_length)]
+    sorted_input_sequence = sorted(
+        pair, key=lambda prior: prior[1], reverse=True)
     for i in range(output_sequence_length):
         output_sequence[i] = sorted_input_sequence[i][0]
 
-    sequence = input_sequence_length + output_sequence_length
-    input_sequence_ = np.zeros((sequence, input_size), dtype=np.uint8)
+    input_sequence_ = np.zeros((sequence, input_size+2), dtype=np.uint8)
     input_priority_ = np.zeros((sequence, 1), dtype=np.float32)
-    output_sequence_ = np.zeros((sequence, input_size), dtype=np.uint8)
+    output_sequence_ = np.zeros((sequence, input_size+2), dtype=np.uint8)
     output_priority_ = np.zeros((sequence, 1), dtype=np.float32)
 
-    input_sequence_[:input_sequence_length] = input_sequence
+    input_sequence_[:input_sequence_length, :-1] = input_sequence
+    input_sequence_[input_sequence_length][-1] = 1
     input_priority_[:input_sequence_length] = input_priority
-    output_sequence_[input_sequence_length:sequence] = output_sequence
-    output_priority_[input_sequence_length:sequence] = output_priority
+    output_sequence_[input_sequence_length+1:sequence, :-1] = output_sequence
+    output_priority_[input_sequence_length+1:sequence] = output_priority
 
     # return input_sequence, input_priority, output_sequence, output_priority
     return input_sequence_, input_priority_, output_sequence_, output_priority_
@@ -273,15 +275,9 @@ def generate_associative_priority_sort_data_set(
         priority_lower_bound,
         priority_upper_bound,
         example_size):
-    # input_sequences = np.zeros((example_size, input_sequence_length, input_size), dtype=np.uint8)
-    # output_sequences = np.zeros((example_size, output_sequence_length, input_size), dtype=np.uint8)
-    # input_priorities = np.zeros((example_size, input_sequence_length, 1), dtype=np.float32)
-    # output_priorities = np.zeros((example_size, output_sequence_length, 1), dtype=np.float32)
     sequence_length = input_sequence_length + output_sequence_length
-    input_sequences = np.zeros((example_size, sequence_length, input_size), dtype=np.uint8)
-    output_sequences = np.zeros((example_size, sequence_length, input_size), dtype=np.uint8)
-    input_priorities = np.zeros((example_size, sequence_length, 1), dtype=np.float32)
-    output_priorities = np.zeros((example_size, sequence_length, 1), dtype=np.float32)
+    input_sequences = np.zeros((example_size, sequence_length+1, input_size+2), dtype=np.float32)
+    output_sequences = np.zeros((example_size, sequence_length+1, input_size+2), dtype=np.float32)
     for i in range(example_size):
         input_sequence, input_priority, output_sequence, output_priority = \
             generate_associative_priority_sort_data(
@@ -292,7 +288,7 @@ def generate_associative_priority_sort_data_set(
                 priority_upper_bound)
         input_sequences[i] = input_sequence
         output_sequences[i] = output_sequence
-        input_priorities[i] = input_priority
-        output_priorities[i] = output_priority
+        input_sequences[i][:, -2] = input_priority.transpose()
+        output_sequences[i][:, -2] = output_priority.transpose()
 
-    return input_sequences, input_priorities, output_sequences, output_priorities
+    return input_sequences, output_sequences

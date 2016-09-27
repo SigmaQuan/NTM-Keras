@@ -112,10 +112,10 @@ def test_priority_sort_data():
     priority_lower_bound = -1
     priority_upper_bound = 1
     example_size = 10
-    input_matrix = np.zeros((input_sequence_length, input_size+1), dtype=np.float32)
-    output_matrix = np.zeros((output_sequence_length, input_size+1), dtype=np.float32)
+    input_matrix = np.zeros((input_sequence_length+1, input_size+2), dtype=np.float32)
+    output_matrix = np.zeros((output_sequence_length+1, input_size+2), dtype=np.float32)
 
-    train_x_seq, train_x_priority, train_y_seq, train_y_priority = \
+    train_x_seq, train_y_seq = \
         dataset.generate_associative_priority_sort_data_set(
             input_size,
             input_sequence_length,
@@ -124,19 +124,21 @@ def test_priority_sort_data():
             priority_upper_bound,
             example_size)
 
-    input_matrix[:, :-1] = train_x_seq[0]
-    input_matrix[:, -1] = train_x_priority[0].reshape(input_sequence_length)
-    output_matrix[:, :-1] = train_y_seq[0]
-    output_matrix[:, -1] = train_y_priority[0].reshape(output_sequence_length)
+    print(train_x_seq[0].shape)
+    print(input_matrix.shape)
+    input_matrix = train_x_seq[0]
+    output_matrix = train_y_seq[0]
     show_matrix = visualization.PlotDynamicalMatrix4PrioritySort(
         input_matrix.transpose(),
         output_matrix.transpose(),
         output_matrix.transpose())
     for i in range(example_size):
-        input_matrix[:, :-1] = train_x_seq[i]
-        input_matrix[:, -1] = train_x_priority[i].reshape(input_sequence_length)
-        output_matrix[:, :-1] = train_y_seq[i]
-        output_matrix[:, -1] = train_y_priority[i].reshape(output_sequence_length)
+        input_matrix = train_x_seq[i]
+        output_matrix = train_y_seq[i]
+        # input_matrix[:, :-1] = train_x_seq[i]
+        # input_matrix[:, -1] = train_x_priority[i].reshape(input_sequence_length)
+        # output_matrix[:, :-1] = train_y_seq[i]
+        # output_matrix[:, -1] = train_y_priority[i].reshape(output_sequence_length)
         show_matrix.update(input_matrix.transpose(),
                            output_matrix.transpose(),
                            output_matrix.transpose())
