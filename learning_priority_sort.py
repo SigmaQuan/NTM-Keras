@@ -24,14 +24,15 @@ from util import LossHistory                 # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
+EXAMPLE_SIZE = 2560000
 # EXAMPLE_SIZE = 1024000
 # EXAMPLE_SIZE = 128000
-EXAMPLE_SIZE = 1280
+# EXAMPLE_SIZE = 1280
 INPUT_DIMENSION_SIZE = 8
 INPUT_SEQUENCE_LENGTH = 20
 PRIORITY_OUTPUT_SEQUENCE_LENGTH = 16
 SEQUENCE_LENGTH = INPUT_SEQUENCE_LENGTH + PRIORITY_OUTPUT_SEQUENCE_LENGTH + 1
-PRIORITY_LOWER_BOUND = -1
+PRIORITY_LOWER_BOUND = 0
 PRIORITY_UPPER_BOUND = 1
 
 # Try replacing SimpleRNN, GRU, or LSTM
@@ -39,10 +40,16 @@ PRIORITY_UPPER_BOUND = 1
 # RNN = recurrent.GRU
 RNN = recurrent.LSTM
 # HIDDEN_SIZE = 128  # acc. 99.9%
-HIDDEN_SIZE = 128*2
+# HIDDEN_SIZE = 128*30  # 191919370 parameters
+# HIDDEN_SIZE = 128*16  #  54646794 parameters
+# HIDDEN_SIZE = 128*8   #  13691914 parameters
+# HIDDEN_SIZE = 128*2   #   3438090 parameters
+# HIDDEN_SIZE = 128*1   #    220554 parameters
+HIDDEN_SIZE = 64       #     57034 parameters
 LAYERS = 1
 # LAYERS = MAX_REPEAT_TIMES
 BATCH_SIZE = 1024
+# BATCH_SIZE = 16
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -132,7 +139,7 @@ model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
 model.add(Activation('sigmoid'))
 
 model.compile(loss='binary_crossentropy',
-              # loss='mse',
+              #loss='mse',
               optimizer='adam',
               metrics=['accuracy'])
 
@@ -162,7 +169,7 @@ for iteration in range(1, 200):
     model.fit([train_x_seq],
               train_y_seq,
               batch_size=BATCH_SIZE,
-              nb_epoch=1,
+              nb_epoch=10,
               # callbacks=[check_pointer, history],
               validation_data=([validation_x_seq], validation_y_seq))
     # print(len(history.losses))
@@ -186,7 +193,7 @@ for iteration in range(1, 200):
         show_matrix.update(input_matrix[0].transpose(),
                            output_matrix[0].transpose(),
                            predict_matrix[0].transpose())
-        show_matrix.save("experiment/priority_data_training_%2d_%2d.png"%(i, iteration))
+        show_matrix.save("experiment/priority_data_training_%2d_%2d.png"%(iteration, i))
 
 show_matrix.close()
 
