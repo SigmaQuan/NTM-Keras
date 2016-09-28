@@ -90,8 +90,9 @@ def test_n_gram_data():
     b = 0.5
     n = 6
     look_up_table = dataset.generate_probability_of_n_gram_by_beta(a, b, n)
-    sequence_length = 200
+    sequence_length = 50
     example_size = 10
+    # print(look_up_table)
     train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
         look_up_table, n, sequence_length, example_size)
     # print(train_X)
@@ -151,5 +152,5 @@ if __name__ == "__main__":
     # test_copy_data_generation()
     # test_repeat_copy_data_generation()
     # test_associative_recall_data()
-    # test_n_gram_data()
-    test_priority_sort_data()
+    test_n_gram_data()
+    # test_priority_sort_data()

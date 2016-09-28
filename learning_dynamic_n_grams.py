@@ -50,21 +50,23 @@ import os
 
 
 # Parameters for the model to train dynamic N Gram
-EXAMPLE_SIZE = 1024000   # need 70000 seconds to genarate these sequences
-# EXAMPLE_SIZE = 128000  # need 700 seconds to genarate these sequences
+# EXAMPLE_SIZE = 1024000   # need 70000 seconds to genarate these sequences
+EXAMPLE_SIZE = 128000  # need 700 seconds to genarate these sequences
 # EXAMPLE_SIZE = 12800  # need 70 seconds to genarate these sequences
 # EXAMPLE_SIZE = 1280  # need 7 seconds to genarate these sequences
 A = 0.5
 B = 0.5
 N_GRAM_SIZE = 6
-INPUT_LENGTH = 200
+INPUT_LENGTH = 100
+INPUT_DIMENSION_SIZE = 1
 
 
 # Try replacing SimpleRNN, GRU, or LSTM
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
 RNN = recurrent.LSTM
-HIDDEN_SIZE = 128*4    # 3152385*4B/1024/1024=12MB
+HIDDEN_SIZE = 128*1    # *4B/1024/1024=12MB
+# HIDDEN_SIZE = 128*4    # 3152385*4B/1024/1024=12MB
 # HIDDEN_SIZE = 128*8    # 12596225*4B/1024/1024=48MB
 # HIDDEN_SIZE = 128*16   # 50358273*4B/1024/1024=192MB
 # HIDDEN_SIZE = 128*32   # 2,0137,9841*4B/1024/1024=768MB
@@ -75,26 +77,27 @@ HIDDEN_SIZE = 128*4    # 3152385*4B/1024/1024=12MB
 LAYERS = 1
 # LAYERS = MAX_REPEAT_TIMES
 # BATCH_SIZE = 1024
-# BATCH_SIZE = 512
-BATCH_SIZE = 360
+BATCH_SIZE = 512
+# BATCH_SIZE = 360
 # BATCH_SIZE = 256
 # BATCH_SIZE = 128  # if the batch size is larger than example size the
                   # CUDA will report error
+# BATCH_SIZE = 64
 # BATCH_SIZE = 8  # if the batch size is large and the hidden size is 128*16 the
                   # CUDA will report error
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Generating data sets...')
-# print('  generating look up table...')
-# look_up_table = dataset.generate_probability_of_n_gram_by_beta(
-#     A, B, N_GRAM_SIZE)
-# print(look_up_table)
-# print("  dumping look up table...")
-# pickle.dump(look_up_table,
-#             # open("experiment/inputs/n_gram_look_up_table.txt", "w"),
-#             open("experiment/inputs/n_gram_look_up_table.txt", "wb"),
-#             True)
+print('  generating look up table...')
+look_up_table = dataset.generate_probability_of_n_gram_by_beta(
+    A, B, N_GRAM_SIZE)
+print(look_up_table)
+print("  dumping look up table...")
+pickle.dump(look_up_table,
+            # open("experiment/inputs/n_gram_look_up_table.txt", "w"),
+            open("experiment/inputs/n_gram_look_up_table.txt", "wb"),
+            True)
 print("  loading look up table...")
 look_up_table = pickle.load(
     open("experiment/inputs/n_gram_look_up_table.txt", "rb"))  # "rb"
@@ -102,16 +105,16 @@ print("  Look_up_table = ")
 print(look_up_table)
 
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
-# print('  generating training x, y...')
-# train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
-#     look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE)
-# print("  dumping training x, y...")
-# pickle.dump(train_X,
-#             open("experiment/inputs/n_gram_train_X.txt", "wb"),
-#             True)
-# pickle.dump(train_Y,
-#             open("experiment/inputs/n_gram_train_Y.txt", "wb"),
-#             True)
+print('  generating training x, y...')
+train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
+    look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE)
+print("  dumping training x, y...")
+pickle.dump(train_X,
+            open("experiment/inputs/n_gram_train_X.txt", "wb"),
+            True)
+pickle.dump(train_Y,
+            open("experiment/inputs/n_gram_train_Y.txt", "wb"),
+            True)
 print("  loading training x, y...")
 train_X = pickle.load(
     open("experiment/inputs/n_gram_train_X.txt", "rb"))
@@ -125,16 +128,16 @@ print("  train_Y.shape = ")
 print(train_Y.shape)
 
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
-# print('  generating validation x, y...')
-# valid_X, valid_Y = dataset.generate_dynamical_n_gram_data_set(
-#     look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE/10)
-# print("  dumping validation x, y...")
-# pickle.dump(valid_X,
-#             open("experiment/inputs/n_gram_valid_X.txt", "wb"),
-#             True)
-# pickle.dump(valid_Y,
-#             open("experiment/inputs/n_gram_valid_Y.txt", "wb"),
-#             True)
+print('  generating validation x, y...')
+valid_X, valid_Y = dataset.generate_dynamical_n_gram_data_set(
+    look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE/10)
+print("  dumping validation x, y...")
+pickle.dump(valid_X,
+            open("experiment/inputs/n_gram_valid_X.txt", "wb"),
+            True)
+pickle.dump(valid_Y,
+            open("experiment/inputs/n_gram_valid_Y.txt", "wb"),
+            True)
 print("  validation training x, y...")
 valid_X = pickle.load(
             open("experiment/inputs/n_gram_valid_X.txt", "rb"))
@@ -172,7 +175,7 @@ model = Sequential()
 # use input_shape=(None, nb_feature).
 hidden_layer = RNN(
     HIDDEN_SIZE,
-    input_shape=(INPUT_LENGTH, 1),
+    input_shape=(INPUT_LENGTH*2-N_GRAM_SIZE+2, INPUT_DIMENSION_SIZE+1),
     init='glorot_uniform',
     inner_init='orthogonal',
     activation='tanh',
@@ -186,13 +189,13 @@ hidden_layer = RNN(
 model.add(hidden_layer)
 
 # For the decoder's input, we repeat the encoded input for each time step
-model.add(RepeatVector(INPUT_LENGTH))
+model.add(RepeatVector(INPUT_LENGTH*2-N_GRAM_SIZE+2))
 # The decoder RNN could be multiple layers stacked or a single layer
 for _ in range(LAYERS):
     model.add(RNN(HIDDEN_SIZE, return_sequences=True))
 
 # For each of step of the output sequence, decide which character should be chosen
-model.add(TimeDistributed(Dense(1)))
+model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+1)))
 # model.add(Activation('softmax'))
 # model.add(Activation('hard_sigmoid'))
 model.add(Activation('sigmoid'))

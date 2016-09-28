@@ -399,10 +399,20 @@ class PlotDynamicalMatrix4NGram:
 
     def update(self, matrix_input, matrix_output, matrix_predict):
         # print(matrix_input[0])
-        matrix = np.zeros((3, len(matrix_input[0])), dtype=np.uint8)
+        # print(matrix_output[0])
+        # print(matrix_predict[0])
+        # matrix = np.zeros((3, len(matrix_input[0])), dtype=np.uint8)
+        # matrix[0] = matrix_input[0]
+        # matrix[1] = matrix_output[0]
+        # matrix[2] = matrix_predict[0]
+        matrix = np.zeros((6, len(matrix_input[0])), dtype=np.uint8)
         matrix[0] = matrix_input[0]
-        matrix[1] = matrix_output[0]
-        matrix[2] = matrix_predict[0]
+        matrix[1] = matrix_input[1]
+        matrix[2] = matrix_output[0]
+        matrix[3] = matrix_output[1]
+        matrix[4] = matrix_predict[0]
+        matrix[5] = matrix_predict[1]
+
         # print(matrix)
 
         axes_w = plt.gca()
