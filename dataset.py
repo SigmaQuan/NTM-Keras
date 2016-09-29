@@ -197,11 +197,11 @@ def get_index(n_1_bits, n):
 def generate_dynamical_n_gram_data(look_up_table, n, sequence_length):
     example_number = 100
     input_size = 1
-    input_sequence = np.zeros((example_number, sequence_length*2-n+2, input_size+1), dtype=np.uint8)
-    output_sequence = np.zeros((example_number, sequence_length*2-n+2, input_size+1), dtype=np.uint8)
+    input_sequence = np.zeros((example_number, sequence_length*2-n+2, input_size+2), dtype=np.uint8)
+    output_sequence = np.zeros((example_number, sequence_length*2-n+2, input_size+2), dtype=np.uint8)
 
-    input_sequence_ = np.zeros((sequence_length*2-n+2, input_size+1), dtype=np.uint8)
-    output_sequence_ = np.zeros((sequence_length*2-n+2, input_size+1), dtype=np.uint8)
+    input_sequence_ = np.zeros((sequence_length*2-n+2, input_size+2), dtype=np.uint8)
+    output_sequence_ = np.zeros((sequence_length*2-n+2, input_size+2), dtype=np.uint8)
     input_sequence_[0:n-1, 0] = np.random.binomial(1, 0.5, (1, n-1)).astype(np.uint8)
     # for i in range(n-1, sequence_length):
     #     n_1_bits = input_sequence[i-n+1: i]
@@ -216,13 +216,23 @@ def generate_dynamical_n_gram_data(look_up_table, n, sequence_length):
         # output_sequence_[sequence_length+i-n+2][0] = np.random.binomial(1, look_up_table[index], 1)
         input_sequence[:, i, 0] = np.random.binomial(1, look_up_table[index], 1)
         # output_sequence_[sequence_length+i-n+2][0] = np.random.binomial(1, look_up_table[index], 1)
-        output_sequence[:, sequence_length+i-n+2, 0] = np.random.binomial(1, look_up_table[index], example_number)
+        output_sequence[:, sequence_length+i-n+2, 0] = np.random.binomial(
+            1, look_up_table[index], example_number)
     input_sequence[:, sequence_length, -1] = 1
+    input_ones = np.ones((example_number, sequence_length))
+    input_sequence[:, 0:sequence_length, 1] = \
+        input_ones - input_sequence[:, 0:sequence_length, 0]
+    output_ones = np.ones((example_number, sequence_length-n+1))
+    output_sequence[:, sequence_length+1:sequence_length*2-n+2, 1] = \
+        output_ones - output_sequence[:, sequence_length+1:sequence_length*2-n+2, 0]
 
     # print(input_sequence_.shape)
     # input_sequence_[0:sequence_length, 0] = input_sequence
     # input_sequence_[sequence_length, -1] = 1
     # output_sequence_[1, sequence_length+1:sequence_length*2-n+2] = input_sequence
+
+    # print(input_sequence)
+    # print(output_sequence)
 
     return input_sequence, output_sequence
 
@@ -230,8 +240,8 @@ def generate_dynamical_n_gram_data(look_up_table, n, sequence_length):
 def generate_dynamical_n_gram_data_set(
         look_up_table, n, sequence_length, example_size):
     input_size = 1
-    input_sequences = np.zeros((example_size, sequence_length*2-n+2, input_size+1), dtype=np.uint8)
-    output_sequences = np.zeros((example_size, sequence_length*2-n+2, input_size+1), dtype=np.uint8)
+    input_sequences = np.zeros((example_size, sequence_length*2-n+2, input_size+2), dtype=np.uint8)
+    output_sequences = np.zeros((example_size, sequence_length*2-n+2, input_size+2), dtype=np.uint8)
     # input_sequences = np.zeros((example_size, sequence_length, input_size), dtype=np.uint8)
     # output_sequences = np.zeros((example_size, sequence_length, input_size), dtype=np.uint8)
     # input_sequences = np.zeros((example_size, sequence_length, 1), dtype=np.bool)

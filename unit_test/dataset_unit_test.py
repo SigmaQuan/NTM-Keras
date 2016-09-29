@@ -91,7 +91,7 @@ def test_n_gram_data():
     n = 6
     look_up_table = dataset.generate_probability_of_n_gram_by_beta(a, b, n)
     sequence_length = 50
-    example_size = 10
+    example_size = 100
     # print(look_up_table)
     train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
         look_up_table, n, sequence_length, example_size)

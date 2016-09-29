@@ -57,8 +57,9 @@ EXAMPLE_SIZE = 128000  # need 700 seconds to genarate these sequences
 A = 0.5
 B = 0.5
 N_GRAM_SIZE = 6
-INPUT_LENGTH = 100
-INPUT_DIMENSION_SIZE = 1
+INPUT_LENGTH = 40
+# INPUT_LENGTH = 100
+INPUT_DIMENSION_SIZE = 2
 
 
 # Try replacing SimpleRNN, GRU, or LSTM
@@ -76,8 +77,8 @@ HIDDEN_SIZE = 128*1    # *4B/1024/1024=12MB
 # "you might consider using 'theano.shared(..., borrow=True)'")
 LAYERS = 1
 # LAYERS = MAX_REPEAT_TIMES
-# BATCH_SIZE = 1024
-BATCH_SIZE = 512
+BATCH_SIZE = 1024
+# BATCH_SIZE = 512
 # BATCH_SIZE = 360
 # BATCH_SIZE = 256
 # BATCH_SIZE = 128  # if the batch size is larger than example size the
@@ -196,12 +197,13 @@ for _ in range(LAYERS):
 
 # For each of step of the output sequence, decide which character should be chosen
 model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+1)))
-# model.add(Activation('softmax'))
+model.add(Activation('softmax'))
 # model.add(Activation('hard_sigmoid'))
-model.add(Activation('sigmoid'))
+# model.add(Activation('sigmoid'))
 
-model.compile(loss='binary_crossentropy',
+model.compile(#loss='binary_crossentropy',
               # loss='mse',
+              loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
 

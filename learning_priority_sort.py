@@ -140,6 +140,7 @@ model.add(Activation('sigmoid'))
 
 model.compile(loss='binary_crossentropy',
               #loss='mse',
+              #loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
 
