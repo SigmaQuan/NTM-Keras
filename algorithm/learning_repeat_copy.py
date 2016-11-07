@@ -13,14 +13,15 @@ from keras.models import Sequential
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent
 import numpy as np
 # from six.moves import range
-import dataset                               # Add by Steven Robot
-import visualization                         # Add by Steven
+import dataset  # Add by Steven Robot
+import visualization  # Add by Steven
 from keras.utils.visualize_util import plot  # Add by Steven
 import time                                  # Add by Steven Robot
 from keras.layers import Merge               # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
+import os
 
 
 # Parameters for the model to train copying algorithm
@@ -43,6 +44,10 @@ HIDDEN_SIZE = 128*2
 LAYERS = 1
 # LAYERS = MAX_REPEAT_TIMES
 BATCH_SIZE = 1024
+FOLDER = "experiment_results/repeat_copy/"
+if not os.path.isdir(FOLDER):
+    os.makedirs(FOLDER)
+    print("create folder: %s" % FOLDER)
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -80,7 +85,7 @@ for i in range(20):
     matrix_list_update.append(train_Y[random_index[i]].transpose())
     matrix_list_update.append(train_Y[random_index[i]].transpose())
     show_matrix.update(matrix_list_update, name_list, train_repeats_times[random_index[i]])
-    show_matrix.save("experiment/inputs/repeat_copy_data_training_%2d.png"%i)
+    show_matrix.save(FOLDER+"repeat_copy_data_training_%2d.png"%i)
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -133,7 +138,7 @@ model.compile(loss='binary_crossentropy',
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Model architecture")
-plot(model, show_shapes=True, to_file="experiment/lstm_repeat_copying.png")
+plot(model, show_shapes=True, to_file=FOLDER+"lstm_repeat_copying.png")
 print("Model summary")
 print(model.summary())
 print("Model parameter count")
@@ -151,7 +156,7 @@ for iteration in range(1, 200):
     print('Iteration', iteration)
     history = LossHistory()
     check_pointer = ModelCheckpoint(
-        filepath="experiment/repeat_copying_model_weights.hdf5",
+        filepath=FOLDER+"repeat_copying_model_weights.hdf5",
         verbose=1, save_best_only=True)
     model.fit([train_X, train_repeats_times],
               train_Y,
@@ -180,7 +185,7 @@ for iteration in range(1, 200):
         show_matrix.update(matrix_list_update,
                            name_list,
                            valid_repeats_times[ind] * (MAX_REPEAT_TIMES - 1.0) + 1)
-        show_matrix.save("experiment/copy_data_predict_%3d.png"%iteration)
+        show_matrix.save(FOLDER+"copy_data_predict_%3d.png" % iteration)
 
 show_matrix.close()
 

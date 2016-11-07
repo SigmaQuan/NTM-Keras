@@ -13,14 +13,15 @@ from keras.models import Sequential
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent
 import numpy as np
 # from six.moves import range
-import dataset                               # Add by Steven Robot
-import visualization                         # Add by Steven
+import dataset  # Add by Steven Robot
+import visualization  # Add by Steven
 from keras.utils.visualize_util import plot  # Add by Steven
 import time                                  # Add by Steven Robot
 from keras.layers import Merge               # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
+import os
 
 
 # Parameters for the model to train copying algorithm
@@ -51,6 +52,10 @@ LAYERS = 1
 # LAYERS = MAX_REPEAT_TIMES
 BATCH_SIZE = 1024
 # BATCH_SIZE = 16
+FOLDER = "experiment_results/priority_sort/"
+if not os.path.isdir(FOLDER):
+    os.makedirs(FOLDER)
+    print("create folder: %s" % FOLDER)
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -100,7 +105,7 @@ for i in range(20):
     show_matrix.update(input_matrix.transpose(),
                        output_matrix.transpose(),
                        predict_matrix.transpose())
-    show_matrix.save("experiment/priority_data_training_%2d.png"%i)
+    show_matrix.save(FOLDER+"priority_data_training_%2d.png"%i)
 # show_matrix.close()
 
 print()
@@ -148,7 +153,7 @@ model.compile(loss='binary_crossentropy',
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Model architecture")
-plot(model, show_shapes=True, to_file="experiment/lstm_priority_sort.png")
+plot(model, show_shapes=True, to_file=FOLDER+"lstm_priority_sort.png")
 print("Model summary")
 print(model.summary())
 print("Model parameter count")
@@ -166,7 +171,7 @@ for iteration in range(1, 200):
     print('Iteration', iteration)
     history = LossHistory()
     check_pointer = ModelCheckpoint(
-        filepath="experiment/priority_sort_model_weights.hdf5",
+        filepath=FOLDER+"priority_sort_model_weights.hdf5",
         verbose=1, save_best_only=True)
     model.fit([train_x_seq],
               train_y_seq,
@@ -195,7 +200,7 @@ for iteration in range(1, 200):
         show_matrix.update(input_matrix[0].transpose(),
                            output_matrix[0].transpose(),
                            predict_matrix[0].transpose())
-        show_matrix.save("experiment/priority_data_training_%2d_%2d.png"%(iteration, i))
+        show_matrix.save(FOLDER+"priority_data_training_%2d_%2d.png" % (iteration, i))
 
 show_matrix.close()
 

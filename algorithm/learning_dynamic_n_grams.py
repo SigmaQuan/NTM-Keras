@@ -36,8 +36,8 @@ from keras.models import Sequential
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent
 import numpy as np
 # from six.moves import range
-import dataset                               # Add by Steven Robot
-import visualization                         # Add by Steven
+import dataset  # Add by Steven Robot
+import visualization  # Add by Steven
 from keras.utils.visualize_util import plot  # Add by Steven
 import time                                  # Add by Steven Robot
 from keras.layers import Merge               # Add by Steven Robot
@@ -87,6 +87,11 @@ BATCH_SIZE = 1024
 # BATCH_SIZE = 8  # if the batch size is large and the hidden size is 128*16 the
                   # CUDA will report error
 
+FOLDER = "experiment_results/dynamic_n_grams/"
+if not os.path.isdir(FOLDER):
+    os.makedirs(FOLDER)
+    print("create folder: %s" % FOLDER)
+
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Generating data sets...')
@@ -96,12 +101,12 @@ look_up_table = dataset.generate_probability_of_n_gram_by_beta(
 print(look_up_table)
 print("  dumping look up table...")
 pickle.dump(look_up_table,
-            # open("experiment/inputs/n_gram_look_up_table.txt", "w"),
-            open("experiment/inputs/n_gram_look_up_table.txt", "wb"),
+            # open(FOLDER+"n_gram_look_up_table.txt", "w"),
+            open(FOLDER+"n_gram_look_up_table.txt", "wb"),
             True)
 print("  loading look up table...")
 look_up_table = pickle.load(
-    open("experiment/inputs/n_gram_look_up_table.txt", "rb"))  # "rb"
+    open(FOLDER+"n_gram_look_up_table.txt", "rb"))  # "rb"
 print("  Look_up_table = ")
 print(look_up_table)
 
@@ -111,16 +116,16 @@ train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
     look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE)
 print("  dumping training x, y...")
 pickle.dump(train_X,
-            open("experiment/inputs/n_gram_train_X.txt", "wb"),
+            open(FOLDER+"n_gram_train_X.txt", "wb"),
             True)
 pickle.dump(train_Y,
-            open("experiment/inputs/n_gram_train_Y.txt", "wb"),
+            open(FOLDER+"n_gram_train_Y.txt", "wb"),
             True)
 print("  loading training x, y...")
 train_X = pickle.load(
-    open("experiment/inputs/n_gram_train_X.txt", "rb"))
+    open(FOLDER+"n_gram_train_X.txt", "rb"))
 train_Y = pickle.load(
-    open("experiment/inputs/n_gram_train_Y.txt", "rb"))
+    open(FOLDER+"n_gram_train_Y.txt", "rb"))
 
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("  train_X.shape = ")
@@ -134,16 +139,16 @@ valid_X, valid_Y = dataset.generate_dynamical_n_gram_data_set(
     look_up_table, N_GRAM_SIZE, INPUT_LENGTH, EXAMPLE_SIZE/10)
 print("  dumping validation x, y...")
 pickle.dump(valid_X,
-            open("experiment/inputs/n_gram_valid_X.txt", "wb"),
+            open(FOLDER+"n_gram_valid_X.txt", "wb"),
             True)
 pickle.dump(valid_Y,
-            open("experiment/inputs/n_gram_valid_Y.txt", "wb"),
+            open(FOLDER+"n_gram_valid_Y.txt", "wb"),
             True)
 print("  validation training x, y...")
 valid_X = pickle.load(
-            open("experiment/inputs/n_gram_valid_X.txt", "rb"))
+            open(FOLDER+"n_gram_valid_X.txt", "rb"))
 valid_Y = pickle.load(
-            open("experiment/inputs/n_gram_valid_Y.txt", "rb"))
+            open(FOLDER+"n_gram_valid_Y.txt", "rb"))
 
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("  valid_X.shape = ")
@@ -165,7 +170,7 @@ for i in range(show_size):
         train_X[random_index[i]].transpose(),
         train_Y[random_index[i]].transpose(),
         train_Y[random_index[i]].transpose())
-    show_matrix.save("experiment/inputs/n_gram_data_training_%2d.png"%i)
+    show_matrix.save(FOLDER+"n_gram_data_training_%2d.png"%i)
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -210,7 +215,7 @@ model.compile(#loss='binary_crossentropy',
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Model architecture")
-plot(model, show_shapes=True, to_file="experiment/lstm_n_gram.png")
+plot(model, show_shapes=True, to_file=FOLDER+"lstm_n_gram.png")
 print("Model summary")
 print(model.summary())
 print("Model parameter count")
@@ -228,7 +233,7 @@ for iteration in range(1, 200):
     print('Iteration', iteration)
     history = LossHistory()
     check_pointer = ModelCheckpoint(
-        filepath="experiment/n_gram_model_weights.hdf5",
+        filepath=FOLDER+"n_gram_model_weights.hdf5",
         verbose=1, save_best_only=True)
     model.fit(train_X,
               train_Y,
@@ -255,7 +260,7 @@ for iteration in range(1, 200):
             inputs[0].transpose(),
             outputs[0].transpose(),
             predicts[0].transpose())
-        show_matrix.save("experiment/inputs/n_gram_data_predict_%2d.png"%i)
+        show_matrix.save(FOLDER+"n_gram_data_predict_%2d.png" % i)
 
 show_matrix.close()
 
