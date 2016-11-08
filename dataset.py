@@ -140,11 +140,13 @@ def generate_repeat_copy_data_set(
 
 
 def generate_associative_recall_items(input_size, item_size, episode_size):
-    inner_item = np.random.binomial(1, 0.5,
-                                    ((item_size + 1) * episode_size, input_size)
-                                    ).astype(np.uint8)
-    items = np.zeros(((item_size + 1) * episode_size, input_size + 2), dtype=np.uint8)
-    # item = np.zeros(((item_size + 1) * episode_size, input_size + 2), dtype=np.bool)
+    inner_item = np.random.binomial(
+        1, 0.5, ((item_size + 1) * episode_size, input_size)
+    ).astype(np.uint8)
+    items = np.zeros(((item_size + 1) * episode_size, input_size + 2),
+                     dtype=np.uint8)
+    # items = np.zeros(((item_size + 1) * episode_size, input_size + 2),
+    #                  dtype=np.bool)
     items[:, :-2] = inner_item
 
     separator = np.zeros((1, input_size + 2), dtype=np.uint8)
@@ -163,7 +165,8 @@ def generate_associative_recall_data(
     # input_sequence = np.zeros(
     #     (sequence_length, input_size + 2), dtype=np.bool)
     input_sequence[:(item_size + 1) * episode_size] = \
-        generate_associative_recall_items(input_size, item_size, episode_size)
+        generate_associative_recall_items(
+            input_size, item_size, episode_size)
 
     separator = np.zeros((1, input_size+2), dtype=np.uint8)
     # separator = np.zeros((1, input_size + 2), dtype=np.bool)
@@ -172,8 +175,8 @@ def generate_associative_recall_data(
 
     input_sequence[(item_size+1)*episode_size:(item_size+1)*(episode_size+1)] = \
         input_sequence[(item_size+1)*query_index:(item_size+1)*(query_index+1)]
-    input_sequence[(item_size+1)*(episode_size)][-2] = 0
-    input_sequence[(item_size+1)*(episode_size)][-1] = 1
+    input_sequence[(item_size+1)*episode_size][-2] = 0
+    input_sequence[(item_size+1)*episode_size][-1] = 1
     input_sequence[(item_size+1)*(episode_size+1)][-1] = 1
 
     output_sequence = np.zeros(
@@ -186,22 +189,22 @@ def generate_associative_recall_data(
 
     return input_sequence, output_sequence
 
-#
-# def generate_repeat_copy_data_set(
-#         input_size, item_size, max_episode_size, example_size):
-#     episode_size = np.random.randint(2, max_episode_size + 1, example_size)
-#     sequence_length = (item_size+1) * (max_episode_size+2)
-#     input_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
-#     output_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
-#     # input_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
-#     # output_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
-#     for i in range(example_size):
-#         input_sequence, output_sequence = generate_associative_recall_data(
-#             input_size, item_size, episode_size[i], max_episode_size)
-#         input_sequences[i] = input_sequence
-#         output_sequences[i] = output_sequence
-#
-#     return input_sequences, output_sequences
+
+def generate_associative_recall_data_set(
+        input_size, item_size, max_episode_size, example_size):
+    episode_size = np.random.randint(2, max_episode_size + 1, example_size)
+    sequence_length = (item_size+1) * (max_episode_size+2)
+    input_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
+    output_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
+    # input_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
+    # output_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
+    for i in range(example_size):
+        input_sequence, output_sequence = generate_associative_recall_data(
+            input_size, item_size, episode_size[i], max_episode_size)
+        input_sequences[i] = input_sequence
+        output_sequences[i] = output_sequence
+
+    return input_sequences, output_sequences
 
 
 def generate_probability_of_n_gram_by_beta(a, b, n):
