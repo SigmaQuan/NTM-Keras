@@ -167,10 +167,10 @@ for iteration in range(1, 200):
               # nb_epoch=1,
               callbacks=[check_pointer, history],
               validation_data=([valid_X, valid_repeats_times], valid_Y))
-    print(len(history.losses))
-    print(history.losses)
-    print(len(history.acces))
-    print(history.acces)
+    # print(len(history.losses))
+    # print(history.losses)
+    # print(len(history.acces))
+    # print(history.acces)
 
     ###
     # Select 20 samples from the validation set at random so we can

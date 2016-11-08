@@ -16,6 +16,8 @@ import numpy as np
 import dataset                               # Add by Steven Robot
 import visualization                         # Add by Steven Robot
 from keras.utils.visualize_util import plot  # Add by Steven Robot
+from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
+from keras.callbacks import Callback         # Add by Steven Robot
 import time                                  # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
@@ -55,6 +57,25 @@ train_X, train_Y = dataset.generate_copy_data_set(
     INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE)
 valid_X, valid_Y = dataset.generate_copy_data_set(
     INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE/10)
+
+matrix_list = []
+matrix_list.append(train_X[0].transpose())
+matrix_list.append(train_Y[0].transpose())
+matrix_list.append(train_Y[0].transpose())
+name_list = []
+name_list.append("Input")
+name_list.append("Target")
+name_list.append("Predict")
+show_matrix = visualization.PlotDynamicalMatrix(
+    matrix_list, name_list)
+random_index = np.random.randint(1, 128, 20)
+for i in range(20):
+    matrix_list_update = []
+    matrix_list_update.append(train_X[random_index[i]].transpose())
+    matrix_list_update.append(train_Y[random_index[i]].transpose())
+    matrix_list_update.append(train_Y[random_index[i]].transpose())
+    show_matrix.update(matrix_list_update, name_list)
+    show_matrix.save(FOLDER+"copy_data_training_%2d.png" % i)
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -97,7 +118,11 @@ model.compile(loss='binary_crossentropy',
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Model architecture")
-plot(model, show_shapes=True, to_file=FOLDER+"model_simple_rnn_for_copying.png")
+plot(model, show_shapes=True, to_file=FOLDER+"simple_rnn_for_copying.png")
+print("Model summary")
+print(model.summary())
+print("Model parameter count")
+print(model.count_params())
 
 
 print()
@@ -105,25 +130,21 @@ print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Training...")
 # Train the model each generation and show predictions against the
 # validation dataset
-matrix_list = []
-matrix_list.append(train_X[0].transpose())
-matrix_list.append(train_Y[0].transpose())
-matrix_list.append(train_Y[0].transpose())
-name_list = []
-name_list.append("Input")
-name_list.append("Target")
-name_list.append("Predict")
-show_matrix = visualization.PlotDynamicalMatrix(matrix_list, name_list)
 for iteration in range(1, 200):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
     print('Iteration', iteration)
+    history = LossHistory()
+    check_pointer = ModelCheckpoint(
+        filepath=FOLDER+"copying_model_weights.hdf5",
+        verbose=1, save_best_only=True)
     model.fit(train_X,
               train_Y,
               batch_size=BATCH_SIZE,
               # nb_epoch=10,
               nb_epoch=1,
+              callbacks=[check_pointer, history],
               validation_data=(valid_X, valid_Y))
     ###
     # Select 3 samples from the validation set at random so we can
