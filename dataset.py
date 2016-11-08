@@ -24,96 +24,118 @@ def generate_weightings(row, col):
 
 
 def generate_copy_data(input_size, sequence_length):
+    # produce random sequence
     sequence = np.random.binomial(
         1, 0.5, (sequence_length, input_size - 1)).astype(np.uint8)
+
+    # allocate space for input sequence and output sequence
     input_sequence = np.zeros(
         (sequence_length * 2 + 1, input_size), dtype=np.bool)
     output_sequence = np.zeros(
         (sequence_length * 2 + 1, input_size), dtype=np.bool)
 
+    # set value of input sequence
     input_sequence[:sequence_length, :-1] = sequence
+    # "1": A special flag which indicate the end of the input
     input_sequence[sequence_length, -1] = 1
+
+    # set value of output sequence
     output_sequence[sequence_length + 1:, :-1] = sequence
-    # output_sequence[:sequence_length + 1, -1] = 1
+    # "1": A special flag which indicate the begin of the output
     output_sequence[sequence_length, -1] = 1
 
     return input_sequence, output_sequence
 
 
-def generate_copy_data_set(input_size, max_size, example_size):
-    sequence_lengths = np.random.randint(1, max_size + 1, example_size)
-    input_sequences = np.zeros((example_size, max_size*2+1, input_size), dtype=np.bool)
-    output_sequences = np.zeros((example_size, max_size*2+1, input_size), dtype=np.bool)
+def generate_copy_data_set(
+        input_dimension,
+        max_length_of_original_sequence,
+        example_size):
+    # get random sequence lengths from uniform distribution [1, 20]
+    sequence_lengths = np.random.randint(
+        1, max_length_of_original_sequence + 1, example_size)
+
+    # allocate space for input sequences and output sequences, where the
+    # "1" is a special flag which indicate the end of the input or output
+    input_sequences = np.zeros(
+        (example_size, max_length_of_original_sequence * 2 + 1, input_dimension),
+        dtype=np.bool)
+    output_sequences = np.zeros(
+        (example_size, max_length_of_original_sequence * 2 + 1, input_dimension),
+        dtype=np.bool)
+
+    # set the value for input sequences and output sequences
     for i in range(example_size):
         input_sequence, output_sequence = generate_copy_data(
-            input_size, sequence_lengths[i])
-        for j in range(sequence_lengths[i]*2+1):
-            # index_1 = max_size*2+1-j-1
-            # index_2 = sequence_lengths[i]*2+1-j-1
-            index_1 = j
-            index_2 = j
-            input_sequences[i][index_1] = input_sequence[index_2]
-            output_sequences[i][index_1] = output_sequence[index_2]
-        # for k in range(sequence_lengths[i]*2+1, max_size*2+1):
-        #     input_sequences[i][k][-1] = 1
-        #     output_sequences[i][k][-1] = 1
-        # for k in range(sequence_lengths[i]*2+1, max_size*2+1):
-        input_sequences[i][sequence_lengths[i]*2+1][-1] = 1
-        output_sequences[i][sequence_lengths[i]*2+1][-1] = 1
+            input_dimension, sequence_lengths[i])
+        input_sequences[i, :sequence_lengths[i]*2+1] = input_sequence
+        output_sequences[i, :sequence_lengths[i]*2+1] = output_sequence
 
     return input_sequences, output_sequences
 
 
 def generate_repeat_copy_data(input_size, sequence_length, repeat_times):
+    # produce random sequence
     sequence = np.random.binomial(
         1, 0.5, (sequence_length, input_size - 1)).astype(np.uint8)
-    input_sequence = np.zeros(
-        (sequence_length + 1 + sequence_length * repeat_times + 1, input_size), dtype=np.bool)
-    output_sequence = np.zeros(
-        (sequence_length + 1 + sequence_length * repeat_times + 1, input_size), dtype=np.bool)
 
+    # allocate space for input sequence and output sequence
+    input_sequence = np.zeros(
+        (sequence_length + 1 + sequence_length * repeat_times,  # + 1
+         input_size),
+        dtype=np.bool)
+    output_sequence = np.zeros(
+        (sequence_length + 1 + sequence_length * repeat_times,  # + 1
+         input_size),
+        dtype=np.bool)
+
+    # set value of input sequence
     input_sequence[:sequence_length, :-1] = sequence
-    input_sequence[sequence_length, -1] = repeat_times
-    output_sequence[sequence_length + 1:-1, :-1] = \
+    # input_sequence[sequence_length, -1] = repeat_times
+    input_sequence[sequence_length, -1] = 1
+
+    # set value of output sequence  ## sequence_length + 1
+    output_sequence[sequence_length+1:, :-1] = \
         np.tile(sequence, (repeat_times, 1))
-    output_sequence[-1, -1] = 1
+    # "1": A special flag which indicate the begin of the output
+    output_sequence[sequence_length, -1] = 1
 
     return input_sequence, output_sequence
 
 
-# # Fixed repeat size
-# def generate_repeat_copy_data_set(input_size, max_size, training_size, repeat_times):
-#     sequence_lengths = np.random.randint(1, max_size + 1, training_size)
-#     input_sequences = np.zeros((training_size, max_size*(repeat_times+1)+1+1, input_size), dtype=np.bool)
-#     output_sequences = np.zeros((training_size, max_size*(repeat_times+1)+1+1, input_size), dtype=np.bool)
-#     for i in range(training_size):
-#         input_sequence, output_sequence = generate_repeat_copy_data(
-#             input_size, sequence_lengths[i], repeat_times)
-#         for j in range(sequence_lengths[i]*(repeat_times+1)+1):
-#             index_1 = j
-#             index_2 = j
-#             input_sequences[i][index_1] = input_sequence[index_2]
-#             output_sequences[i][index_1] = output_sequence[index_2]
-#         # input_sequences[i][sequence_lengths[i]*(repeat_times+1)+1][-1] = 1
-#         output_sequences[i][sequence_lengths[i]*(repeat_times+1)+1][-1] = 1
-#     return input_sequences, output_sequences
+def generate_repeat_copy_data_set(
+        input_dimension,
+        max_length_of_original_sequence,
+        example_size,
+        max_repeat_times):
+    # produce random sequence lengths from uniform distribution
+    # [1, max_length]
+    sequence_lengths = np.random.randint(
+        1, max_length_of_original_sequence + 1, example_size)
 
-
-def generate_repeat_copy_data_set(input_size, max_size, example_size, max_repeat_times):
-    sequence_lengths = np.random.randint(1, max_size + 1, example_size)
+    # produce random repeat times from uniform distribution
+    # [1, max_repeat_times]
     repeat_times = np.random.randint(1, max_repeat_times + 1, example_size)
-    input_sequences = np.zeros((example_size, max_size*(max_repeat_times+1)+1+1, input_size), dtype=np.bool)
-    output_sequences = np.zeros((example_size, max_size*(max_repeat_times+1)+1+1, input_size), dtype=np.bool)
+    input_sequences = np.zeros(
+        (example_size,
+         max_length_of_original_sequence * (max_repeat_times + 1) + 1,  # + 1
+         input_dimension),
+        dtype=np.bool)
+    output_sequences = np.zeros(
+        (example_size,
+         max_length_of_original_sequence * (max_repeat_times + 1) + 1,  # + 1
+         input_dimension),
+        dtype=np.bool)
+
+    # set the value for input sequences and output sequences
     for i in range(example_size):
         input_sequence, output_sequence = generate_repeat_copy_data(
-            input_size, sequence_lengths[i], repeat_times[i])
-        for j in range(sequence_lengths[i]*(repeat_times[i]+1)+1):
-            index_1 = j
-            index_2 = j
-            input_sequences[i][index_1] = input_sequence[index_2]
-            output_sequences[i][index_1] = output_sequence[index_2]
-        # input_sequences[i][sequence_lengths[i]*(repeat_times+1)+1][-1] = 1
-        output_sequences[i][sequence_lengths[i]*(repeat_times[i]+1)+1][-1] = 1
+            input_dimension, sequence_lengths[i], repeat_times[i])
+        input_sequences[i, :sequence_lengths[i]*(repeat_times[i]+1)+1] = \
+            input_sequence
+        output_sequences[i, :sequence_lengths[i]*(repeat_times[i]+1)+1] = \
+            output_sequence
+
     return input_sequences, output_sequences, repeat_times
 
 
@@ -164,22 +186,22 @@ def generate_associative_recall_data(
 
     return input_sequence, output_sequence
 
-
-def generate_repeat_copy_data_set(
-        input_size, item_size, max_episode_size, example_size):
-    episode_size = np.random.randint(2, max_episode_size + 1, example_size)
-    sequence_length = (item_size+1) * (max_episode_size+2)
-    input_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
-    output_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
-    # input_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
-    # output_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
-    for i in range(example_size):
-        input_sequence, output_sequence = generate_associative_recall_data(
-            input_size, item_size, episode_size[i], max_episode_size)
-        input_sequences[i] = input_sequence
-        output_sequences[i] = output_sequence
-
-    return input_sequences, output_sequences
+#
+# def generate_repeat_copy_data_set(
+#         input_size, item_size, max_episode_size, example_size):
+#     episode_size = np.random.randint(2, max_episode_size + 1, example_size)
+#     sequence_length = (item_size+1) * (max_episode_size+2)
+#     input_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
+#     output_sequences = np.zeros((example_size, sequence_length, input_size + 2), dtype=np.uint8)
+#     # input_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
+#     # output_sequences = np.zeros((training_size, sequence_length, input_size + 2), dtype=np.bool)
+#     for i in range(example_size):
+#         input_sequence, output_sequence = generate_associative_recall_data(
+#             input_size, item_size, episode_size[i], max_episode_size)
+#         input_sequences[i] = input_sequence
+#         output_sequences[i] = output_sequence
+#
+#     return input_sequences, output_sequences
 
 
 def generate_probability_of_n_gram_by_beta(a, b, n):

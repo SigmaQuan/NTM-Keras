@@ -13,30 +13,30 @@ from keras.models import Sequential
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent
 import numpy as np
 # from six.moves import range
-import dataset  # Add by Steven Robot
-import visualization  # Add by Steven
-from keras.utils.visualize_util import plot  # Add by Steven
+import dataset                               # Add by Steven Robot
+import visualization                         # Add by Steven Robot
+from keras.utils.visualize_util import plot  # Add by Steven Robot
 import time                                  # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
-import os
+import os                                    # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
 TRAINING_SIZE = 1024000         # for 8-bits length
 # TRAINING_SIZE = 128000         # for 4-bits length
 # TRAINING_SIZE = 1280
-# INPUT_DIMENSION_SIZE = 4 + 1   # for 4-bits length
-# MAX_COPY_LENGTH = 10           # for 4-bits length
 INPUT_DIMENSION_SIZE = 8 + 1    # for 8-bits length
+# INPUT_DIMENSION_SIZE = 4 + 1   # for 4-bits length
 MAX_COPY_LENGTH = 20            # for 8-bits length
+# MAX_COPY_LENGTH = 10           # for 4-bits length
 MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + MAX_COPY_LENGTH
 
 # Try replacing SimpleRNN, GRU, or LSTM
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
 RNN = recurrent.LSTM
-# HIDDEN_SIZE = 128
-HIDDEN_SIZE = 128*4
+HIDDEN_SIZE = 128
+# HIDDEN_SIZE = 128*4
 LAYERS = 1
 # BATCH_SIZE = 2048
 BATCH_SIZE = 1024
@@ -51,8 +51,6 @@ if not os.path.isdir(FOLDER):
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Generating data sets...')
-# train, valid, test = dataset.generate_copy_data_sets(
-#     INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE)
 train_X, train_Y = dataset.generate_copy_data_set(
     INPUT_DIMENSION_SIZE, MAX_COPY_LENGTH, TRAINING_SIZE)
 valid_X, valid_Y = dataset.generate_copy_data_set(
@@ -125,6 +123,7 @@ for iteration in range(1, 200):
               train_Y,
               batch_size=BATCH_SIZE,
               nb_epoch=10,
+              # nb_epoch=1,
               validation_data=(valid_X, valid_Y))
     ###
     # Select 3 samples from the validation set at random so we can
@@ -143,6 +142,6 @@ for iteration in range(1, 200):
         matrix_list_update.append(outputs[0].transpose())
         matrix_list_update.append(predicts[0].transpose())
         show_matrix.update(matrix_list_update, name_list)
-        show_matrix.save(FOLDER+"copy_data_predict_%3d.png"%iteration)
+        show_matrix.save(FOLDER+"copy_data_predict_%3d.png" % iteration)
 
 show_matrix.close()

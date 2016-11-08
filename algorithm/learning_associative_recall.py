@@ -13,14 +13,14 @@ from keras.models import Sequential
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent
 import numpy as np
 # from six.moves import range
-import dataset  # Add by Steven Robot
-import visualization  # Add by Steven
-from keras.utils.visualize_util import plot  # Add by Steven
+import dataset                               # Add by Steven Robot
+import visualization                         # Add by Steven Robot
+from keras.utils.visualize_util import plot  # Add by Steven Robot
 import time                                  # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
-import os
+import os                                    # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm

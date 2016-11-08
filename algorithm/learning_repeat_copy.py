@@ -2,8 +2,9 @@
 '''An implementation of learning copying algorithm with RNN (basic RNN, LSTM,
 GRU).
 Input sequence length: "1 ~ 20: (1*2+1)=3 ~ (20*2+1)=41"
-Input dimension: "8"
-Output sequence length: equal to input sequence length.
+Input dimension: "4"
+Repeat times: "5"
+Output sequence length: equal to input sequence length * repeat times.
 Output dimension: equal to input dimension.
 '''
 
@@ -13,15 +14,15 @@ from keras.models import Sequential
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent
 import numpy as np
 # from six.moves import range
-import dataset  # Add by Steven Robot
-import visualization  # Add by Steven
-from keras.utils.visualize_util import plot  # Add by Steven
+import dataset                               # Add by Steven Robot
+import visualization                         # Add by Steven Robot
+from keras.utils.visualize_util import plot  # Add by Steven Robot
 import time                                  # Add by Steven Robot
 from keras.layers import Merge               # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
-import os
+import os                                    # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
@@ -33,7 +34,7 @@ MAX_COPY_LENGTH = 10
 # REPEAT_TIMES = 2
 # MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + REPEAT_TIMES * MAX_COPY_LENGTH + 1
 MAX_REPEAT_TIMES = 5
-MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + MAX_REPEAT_TIMES * MAX_COPY_LENGTH + 1
+MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + MAX_REPEAT_TIMES * MAX_COPY_LENGTH  # + 1
 
 # Try replacing SimpleRNN, GRU, or LSTM
 # RNN = recurrent.SimpleRNN
@@ -44,6 +45,7 @@ HIDDEN_SIZE = 128*2
 LAYERS = 1
 # LAYERS = MAX_REPEAT_TIMES
 BATCH_SIZE = 1024
+# BATCH_SIZE = 128
 FOLDER = "experiment_results/repeat_copy/"
 if not os.path.isdir(FOLDER):
     os.makedirs(FOLDER)
@@ -162,6 +164,7 @@ for iteration in range(1, 200):
               train_Y,
               batch_size=BATCH_SIZE,
               nb_epoch=30,
+              # nb_epoch=1,
               callbacks=[check_pointer, history],
               validation_data=([valid_X, valid_repeats_times], valid_Y))
     print(len(history.losses))
@@ -185,7 +188,7 @@ for iteration in range(1, 200):
         show_matrix.update(matrix_list_update,
                            name_list,
                            valid_repeats_times[ind] * (MAX_REPEAT_TIMES - 1.0) + 1)
-        show_matrix.save(FOLDER+"copy_data_predict_%3d.png" % iteration)
+        show_matrix.save(FOLDER+"repeat_copy_data_predict_%3d.png" % iteration)
 
 show_matrix.close()
 
