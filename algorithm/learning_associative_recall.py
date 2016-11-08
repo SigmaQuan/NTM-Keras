@@ -48,9 +48,9 @@ if not os.path.isdir(FOLDER):
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Generating data sets...')
-train_X, train_Y = dataset.generate_repeat_copy_data_set(
+train_X, train_Y = dataset.generate_associative_recall_data_set(
         INPUT_DIMENSION_SIZE, ITEM_SIZE, MAX_EPISODE_SIZE, TRAINING_SIZE)
-valid_X, valid_Y = dataset.generate_repeat_copy_data_set(
+valid_X, valid_Y = dataset.generate_associative_recall_data_set(
         INPUT_DIMENSION_SIZE, ITEM_SIZE, MAX_EPISODE_SIZE, TRAINING_SIZE/5)
 
 matrix_list = []
