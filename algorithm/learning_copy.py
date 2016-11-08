@@ -35,8 +35,8 @@ MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + MAX_COPY_LENGTH
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
 RNN = recurrent.LSTM
-HIDDEN_SIZE = 128
-# HIDDEN_SIZE = 128*4
+# HIDDEN_SIZE = 128
+HIDDEN_SIZE = 128*4
 LAYERS = 1
 # BATCH_SIZE = 2048
 BATCH_SIZE = 1024
@@ -122,8 +122,8 @@ for iteration in range(1, 200):
     model.fit(train_X,
               train_Y,
               batch_size=BATCH_SIZE,
-              nb_epoch=10,
-              # nb_epoch=1,
+              # nb_epoch=10,
+              nb_epoch=1,
               validation_data=(valid_X, valid_Y))
     ###
     # Select 3 samples from the validation set at random so we can
