@@ -1,7 +1,7 @@
 from keras import backend as K
 
 
-def reading(head_num, memory_size, memory_dim, memory_t, weight_t):
+def batch_reading(head_num, memory_size, memory_dim, memory_t, weight_t):
     """
     Reading memory.
     :param head_num:

@@ -1,7 +1,7 @@
 from keras import backend as K
 
 
-def writing(
+def batch_writing(
         head_num, memory_size, memory_dim, memory_t_1,
         weight_t, eraser_t, adder_t):
     memory_t = memory_t_1
