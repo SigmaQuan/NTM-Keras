@@ -1,6 +1,27 @@
 from keras import backend as K
 
 
+def writing(
+        head_num, memory_size, memory_dim, memory_t_1,
+        weight_t, eraser_t, adder_t):
+    memory_t = memory_t_1
+
+    for i in xrange(head_num):
+        # get the addressing for writing
+        address_begin = i * memory_size
+        address_end = address_begin + memory_size
+        content_begin = i * memory_dim
+        content_end = content_begin + memory_dim
+        memory_t = writing(
+            memory_t_1,
+            weight_t[address_begin:address_end],
+            eraser_t[content_begin:content_end],
+            adder_t[content_begin:content_end])
+        memory_t_1 = memory_t
+
+    return memory_t
+
+
 def writing(memory_t_1, weight_t, eraser_t, adder_t):
     """
     Each writing process contain two parts: an erase followed by an add.

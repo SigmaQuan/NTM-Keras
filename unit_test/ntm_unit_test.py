@@ -25,9 +25,9 @@ import ntm                                    # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
-TRAINING_SIZE = 1024000
+# TRAINING_SIZE = 1024000
 # TRAINING_SIZE = 128000
-# TRAINING_SIZE = 1280
+TRAINING_SIZE = 1280
 INPUT_DIMENSION_SIZE = 6
 ITEM_SIZE = 3
 MAX_EPISODE_SIZE = 6
@@ -36,12 +36,20 @@ MAX_INPUT_LENGTH = (ITEM_SIZE+1) * (MAX_EPISODE_SIZE+2)
 # Try replacing SimpleRNN, GRU, or LSTM
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
-RNN = recurrent.LSTM
+# RNN = recurrent.LSTM
+RNN = ntm.NTM
 HIDDEN_SIZE = 256
 LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
 # BATCH_SIZE = 1024
 BATCH_SIZE = 128
+MEMORY_DIM = 128
+MEMORY_SIZE = 20
+CONTROLLER_OUTPUT_DIM = 100
+LOCATION_SHIFT_RANGE = 1
+NUM_READ_HEAD = 1
+NUM_WRITE_HEAD = 1
+
 FOLDER = "experiment_results/associative_recall_ntm/"
 if not os.path.isdir(FOLDER):
     os.makedirs(FOLDER)
@@ -65,7 +73,7 @@ name_list.append("Target")
 name_list.append("Predict")
 show_matrix = visualization.PlotDynamicalMatrix(matrix_list, name_list)
 random_index = np.random.randint(1, 128, 20)
-for i in range(20):
+for i in range(3):
     matrix_list_update = []
     matrix_list_update.append(train_X[random_index[i]].transpose())
     matrix_list_update.append(train_Y[random_index[i]].transpose())
@@ -81,8 +89,14 @@ model = Sequential()
 # note: in a situation where your input sequences have a variable length,
 # use input_shape=(None, nb_feature).
 model.add(RNN(
-    HIDDEN_SIZE,
     input_shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE+2),
+    output_dim=INPUT_DIMENSION_SIZE+2,
+    memory_dim=MEMORY_DIM,
+    memory_size=MEMORY_SIZE,
+    controller_output_dim=CONTROLLER_OUTPUT_DIM,
+    location_shift_range=LOCATION_SHIFT_RANGE,
+    num_read_head=NUM_READ_HEAD,
+    num_write_head=NUM_WRITE_HEAD,
     init='glorot_uniform',
     inner_init='orthogonal',
     activation='tanh',
@@ -91,19 +105,20 @@ model.add(RNN(
     # activation='sigmoid',
     W_regularizer=None,
     U_regularizer=None,
+    R_regularizer=None,
     b_regularizer=None,
     dropout_W=0.0,
     dropout_U=0.0))
 
 
-# For the decoder's input, we repeat the encoded input for each time step
-# model.add(RepeatVector(MAX_INPUT_LENGTH))
-# The decoder RNN could be multiple layers stacked or a single layer
-for _ in range(LAYERS):
-    model.add(RNN(HIDDEN_SIZE, return_sequences=True))
+# # For the decoder's input, we repeat the encoded input for each time step
+# # model.add(RepeatVector(MAX_INPUT_LENGTH))
+# # The decoder RNN could be multiple layers stacked or a single layer
+# for _ in range(LAYERS):
+#     model.add(RNN(HIDDEN_SIZE, return_sequences=True))
 
 # For each of step of the output sequence, decide which character should be chosen
-model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
+# model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
 # model.add(Activation('softmax'))
 # model.add(Activation('hard_sigmoid'))
 model.add(Activation('sigmoid'))

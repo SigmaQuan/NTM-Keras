@@ -124,6 +124,7 @@ class NTM(Recurrent):
         # if self.dropout_W or self.dropout_U or self.dropout_R:
         #     self.uses_learning_phase = True
         # add by Robot Steven ********************************************#
+
         super(NTM, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -487,7 +488,7 @@ class NTM(Recurrent):
         # B_R = states[8]         # dropout matrices for output units
 
         # concatenate x with read content
-        x = K.concatenate(x, r_tm1_list)
+        # x = K.concatenate(x, r_tm1_list)
 
         if self.consume_less == 'gpu':
             # z = K.dot(x * B_W[0], self.W) + K.dot(h_tm1 * B_U[0], self.U) + self.b
@@ -564,16 +565,34 @@ class NTM(Recurrent):
         xi_e_w = K.dot(h, self.W_xi_e_w)
         xi_a_w = K.dot(h, self.W_xi_a_w)
 
+        # # get the addressing for writing
+        # w_w_t = EM.addressing(memory_tm1, w_w_tm1, xi_k_w, xi_beta_w, xi_g_w,
+        #                       xi_s_w, xi_gama_w)
+        #
+        # # update the memory
+        # memory_t = Writer.writing(memory_tm1, w_w_t, xi_e_w, xi_a_w)
+        #
+        # # get the addressing for reading
+        # w_r_t = EM.addressing(memory_t, w_r_tm1, xi_k_r, xi_beta_r, xi_g_r,
+        #                       xi_s_r, xi_gama_r)
+        #
+        # # read from memory
+        # r_t_list = Reader.reading(memory_t, w_r_t)
+
         # get the addressing for writing
-        w_w_t = EM.addressing(memory_tm1, w_w_tm1, xi_k_w, xi_beta_w, xi_g_w,
-                              xi_s_w, xi_gama_w)
+        w_w_t = EM.batch_addressing(
+            self.num_write_head, self.memory_size, memory_tm1,
+            w_w_tm1, xi_k_w, xi_beta_w, xi_g_w, xi_s_w, xi_gama_w)
 
         # update the memory
-        memory_t = Writer.writing(memory_tm1, w_w_t, xi_e_w, xi_a_w)
+        memory_t = Writer.writing(
+            self.num_write_head, self.memory_size, self.memory_dim,
+            memory_tm1, w_w_t, xi_e_w, xi_a_w)
 
         # get the addressing for reading
-        w_r_t = EM.addressing(memory_t, w_r_tm1, xi_k_r, xi_beta_r, xi_g_r,
-                              xi_s_r, xi_gama_r)
+        w_r_t = EM.batch_addressing(
+            self.num_write_head, self.memory_size, memory_t,
+            w_r_tm1, xi_k_r, xi_beta_r, xi_g_r, xi_s_r, xi_gama_r)
 
         # read from memory
         r_t_list = Reader.reading(memory_t, w_r_t)
