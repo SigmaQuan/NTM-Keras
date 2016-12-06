@@ -6,10 +6,12 @@ from keras import activations, initializations, regularizers
 from keras.engine import Layer, InputSpec
 
 from keras.layers import Recurrent
+from keras.layers import time_distributed_dense
+
 
 class NTM(Recurrent):
     def __init__(self, output_dim, memory_dim=128, memory_size=20,
-                 controller_dim=100, location_shift_range=1,
+                 controller_output_dim=100, location_shift_range=1,
                  num_read_head=1, num_write_head=1,
                  init='glorot_uniform', inner_init='orthogonal',
                  forget_bias_init='one', activation='tanh',
@@ -82,7 +84,7 @@ class NTM(Recurrent):
         # add by Robot Steven ********************************************#
         self.memory_dim = memory_dim
         self.memory_size = memory_size
-        self.controller_output_dim = controller_dim
+        self.controller_output_dim = controller_output_dim
         self.location_shift_range = location_shift_range
         self.num_read_head = num_read_head
         self.num_write_head = num_write_head
@@ -118,7 +120,8 @@ class NTM(Recurrent):
             # Comparing with the old self.states, there are four
             # additional item which represents external memory, writing
             # addressing, reading addressing and read_content correspondingly.
-            self.states = [None, None, None, None, None, None]
+            # h_tm1, c_tm1, B_U, B_W, M_tm1, w_w_tm1, w_r_tm1, r_tm1_list
+            self.states = [None, None, None, None, None, None, None, None]
             # add by Robot Steven ****************************************#
 
         if self.consume_less == 'gpu':
@@ -166,10 +169,10 @@ class NTM(Recurrent):
                      (self.location_shift_range*2+1) + 1 +
                      self.memory_dim + self.memory_dim)
                  ),
-                name='{}_W_y'.format(self.name))
+                name='{}_W_xi'.format(self.name))
             self.W_r = self.init((self.num_read_head * self.memory_dim,
                                   self.output_dim),
-                                 name='{}_W_y'.format(self.name))
+                                 name='{}_W_r'.format(self.name))
             self.trainable_weights = [self.W, self.U, self.b, self.W_y,
                                       self.W_xi, self.W_r]
             # add by Robot Steven ****************************************#
@@ -208,6 +211,7 @@ class NTM(Recurrent):
             # self.U = K.concatenate([self.U_i, self.U_f, self.U_c, self.U_o])
             # self.b = K.concatenate([self.b_i, self.b_f, self.b_c, self.b_o])
 
+            # add by Robot Steven ****************************************#
             self.W_i = self.init(
                 (self.input_dim, self.controller_output_dim),
                 name='{}_W_i'.format(self.name))
@@ -246,14 +250,88 @@ class NTM(Recurrent):
             self.b_o = K.zeros((self.controller_output_dim,),
                                name='{}_b_o'.format(self.name))
 
+            self.W_y = self.init((self.controller_output_dim,
+                                  self.output_dim),
+                                 name='{}_W_y'.format(self.name))
+
+            self.W_xi_k_r = self.init(
+                (self.controller_output_dim,
+                 self.num_read_head * self.memory_dim),
+                name='{}_W_xi_k_r'.format(self.name))
+            self.W_xi_beta_r = self.init(
+                (self.controller_output_dim,
+                 self.num_read_head * 1),
+                name='{}_W_xi_beta__r'.format(self.name))
+            self.W_xi_g_r = self.init(
+                (self.controller_output_dim,
+                 self.num_read_head * 1),
+                name='{}_W_xi_g_r'.format(self.name))
+            self.W_xi_s_r = self.init(
+                (self.controller_output_dim,
+                 self.num_read_head * (self.location_shift_range * 2 + 1)),
+                name='{}_W_xi_s_r'.format(self.name))
+            self.W_xi_gama_r = self.init(
+                (self.controller_output_dim,
+                 self.num_read_head * 1),
+                name='{}_W_xi_gama_r'.format(self.name))
+
+            self.W_xi_k_w = self.init(
+                (self.controller_output_dim,
+                 self.num_write_head * self.memory_dim),
+                name='{}_W_xi_k_w'.format(self.name))
+            self.W_xi_beta_w = self.init(
+                (self.controller_output_dim,
+                 self.num_write_head * 1),
+                name='{}_W_xi_beta__w'.format(self.name))
+            self.W_xi_g_w = self.init(
+                (self.controller_output_dim,
+                 self.num_write_head * 1),
+                name='{}_W_xi_g_w'.format(self.name))
+            self.W_xi_s_w = self.init(
+                (self.controller_output_dim,
+                 self.num_write_head * (self.location_shift_range * 2 + 1)),
+                name='{}_W_xi_s_w'.format(self.name))
+            self.W_xi_gama_w = self.init(
+                (self.controller_output_dim,
+                 self.num_write_head * 1),
+                name='{}_W_xi_gama_w'.format(self.name))
+            self.W_xi_e_w = self.init(
+                (self.controller_output_dim,
+                 self.num_write_head * self.memory_dim),
+                name='{}_W_xi_e_w'.format(self.name))
+            self.W_xi_a_w = self.init(
+                (self.controller_output_dim,
+                 self.num_write_head * self.memory_dim),
+                name='{}_W_xi_a_w'.format(self.name))
+
+            self.W_r = self.init((self.num_read_head * self.memory_dim,
+                                  self.output_dim),
+                                 name='{}_W_r'.format(self.name))
+
             self.trainable_weights = [self.W_i, self.U_i, self.b_i,
                                       self.W_c, self.U_c, self.b_c,
                                       self.W_f, self.U_f, self.b_f,
-                                      self.W_o, self.U_o, self.b_o]
+                                      self.W_o, self.U_o, self.b_o,
+                                      self.W_y,
+                                      self.W_xi_k_r, self.W_xi_beta_r,
+                                      self.W_xi_g_r, self.W_xi_s_r,
+                                      self.W_xi_gama_r,
+                                      self.W_xi_k_w, self.W_xi_beta_w,
+                                      self.W_xi_g_w, self.W_xi_s_w,
+                                      self.W_xi_gama_w,
+                                      self.W_xi_e_w, self.W_xi_a_w,
+                                      self.W_r]
 
             self.W = K.concatenate([self.W_i, self.W_f, self.W_c, self.W_o])
             self.U = K.concatenate([self.U_i, self.U_f, self.U_c, self.U_o])
             self.b = K.concatenate([self.b_i, self.b_f, self.b_c, self.b_o])
+            self.W_xi = K.concatenate(
+                [self.W_xi_k_r, self.W_xi_beta_r, self.W_xi_g_r,
+                 self.W_xi_s_r, self.W_xi_gama_r,
+                 self.W_xi_k_w, self.W_xi_beta_w, self.W_xi_g_w,
+                 self.W_xi_s_w, self.W_xi_gama_w,
+                 self.W_xi_e_w, self.W_xi_a_w])
+            # add by Robot Steven ****************************************#
 
         self.regularizers = []
         if self.W_regularizer:
@@ -265,6 +343,14 @@ class NTM(Recurrent):
         if self.b_regularizer:
             self.b_regularizer.set_param(self.b)
             self.regularizers.append(self.b_regularizer)
+        # add by Robot Steven ********************************************#
+        if self.W_y_regularizer:
+            self.b_regularizer.set_param(self.W_y)
+        if self.W_xi_regularizer:
+            self.W_xi_regularizer.set_param(self.W_xi)
+        if self.W_r_regularizer:
+            self.W_r_regularizer.set_param(self.W_r_regularizer)
+        # add by Robot Steven ********************************************#
 
         if self.initial_weights is not None:
             self.set_weights(self.initial_weights)
@@ -278,13 +364,27 @@ class NTM(Recurrent):
             raise Exception('If a RNN is stateful, a complete ' +
                             'input_shape must be provided (including batch size).')
         if hasattr(self, 'states'):
+            # K.set_value(self.states[0],
+            #             np.zeros((input_shape[0], self.output_dim)))
+            # K.set_value(self.states[1],
+            #             np.zeros((input_shape[0], self.output_dim)))
+            # add by Robot Steven ****************************************#
             K.set_value(self.states[0],
-                        np.zeros((input_shape[0], self.output_dim)))
+                        np.zeros((input_shape[0], self.controller_output_dim)))
             K.set_value(self.states[1],
-                        np.zeros((input_shape[0], self.output_dim)))
+                        np.zeros((input_shape[0], self.controller_output_dim)))
+            # add by Robot Steven ****************************************#
         else:
-            self.states = [K.zeros((input_shape[0], self.output_dim)),
-                           K.zeros((input_shape[0], self.output_dim))]
+            # self.states = [K.zeros((input_shape[0], self.output_dim)),
+            #                K.zeros((input_shape[0], self.output_dim))]
+            # add by Robot Steven ****************************************#
+            self.states = [K.zeros((input_shape[0], self.output_dim)),  # h_tm1
+                           K.zeros((input_shape[0], self.output_dim))]  # c_tm1
+                           # K.zeros((input_shape[0], self.output_dim)),
+                           # K.zeros((input_shape[0], self.output_dim)),
+                           # K.zeros((input_shape[0], self.output_dim)),
+                           # K.zeros((input_shape[0], self.output_dim))]
+            # add by Robot Steven ****************************************#
 
     def preprocess_input(self, x):
         if self.consume_less == 'cpu':
@@ -296,14 +396,22 @@ class NTM(Recurrent):
             input_dim = input_shape[2]
             timesteps = input_shape[1]
 
+            # x_i = time_distributed_dense(x, self.W_i, self.b_i, dropout,
+            #                              input_dim, self.output_dim, timesteps)
+            # x_f = time_distributed_dense(x, self.W_f, self.b_f, dropout,
+            #                              input_dim, self.output_dim, timesteps)
+            # x_c = time_distributed_dense(x, self.W_c, self.b_c, dropout,
+            #                              input_dim, self.output_dim, timesteps)
+            # x_o = time_distributed_dense(x, self.W_o, self.b_o, dropout,
+            #                              input_dim, self.output_dim, timesteps)
             x_i = time_distributed_dense(x, self.W_i, self.b_i, dropout,
-                                         input_dim, self.output_dim, timesteps)
+                                         input_dim, self.controller_output_dim, timesteps)
             x_f = time_distributed_dense(x, self.W_f, self.b_f, dropout,
-                                         input_dim, self.output_dim, timesteps)
+                                         input_dim, self.controller_output_dim, timesteps)
             x_c = time_distributed_dense(x, self.W_c, self.b_c, dropout,
-                                         input_dim, self.output_dim, timesteps)
+                                         input_dim, self.controller_output_dim, timesteps)
             x_o = time_distributed_dense(x, self.W_o, self.b_o, dropout,
-                                         input_dim, self.output_dim, timesteps)
+                                         input_dim, self.controller_output_dim, timesteps)
             return K.concatenate([x_i, x_f, x_c, x_o], axis=2)
         else:
             return x
@@ -313,14 +421,22 @@ class NTM(Recurrent):
         c_tm1 = states[1]
         B_U = states[2]
         B_W = states[3]
+        M_tm1 = states[4]
+        w_w_tm1 = states[5]
+        w_r_tm1 = states[6]
+        r_tm1_list = states[7]
 
         if self.consume_less == 'gpu':
             z = K.dot(x * B_W[0], self.W) + K.dot(h_tm1 * B_U[0], self.U) + self.b
 
-            z0 = z[:, :self.output_dim]
-            z1 = z[:, self.output_dim: 2 * self.output_dim]
-            z2 = z[:, 2 * self.output_dim: 3 * self.output_dim]
-            z3 = z[:, 3 * self.output_dim:]
+            # z0 = z[:, :self.output_dim]
+            # z1 = z[:, self.output_dim: 2 * self.output_dim]
+            # z2 = z[:, 2 * self.output_dim: 3 * self.output_dim]
+            # z3 = z[:, 3 * self.output_dim:]
+            z0 = z[:, :self.controller_output_dim]
+            z1 = z[:, self.controller_output_dim: 2 * self.controller_output_dim]
+            z2 = z[:, 2 * self.controller_output_dim: 3 * self.controller_output_dim]
+            z3 = z[:, 3 * self.controller_output_dim:]
 
             i = self.inner_activation(z0)
             f = self.inner_activation(z1)
@@ -328,10 +444,14 @@ class NTM(Recurrent):
             o = self.inner_activation(z3)
         else:
             if self.consume_less == 'cpu':
-                x_i = x[:, :self.output_dim]
-                x_f = x[:, self.output_dim: 2 * self.output_dim]
-                x_c = x[:, 2 * self.output_dim: 3 * self.output_dim]
-                x_o = x[:, 3 * self.output_dim:]
+                # x_i = x[:, :self.output_dim]
+                # x_f = x[:, self.output_dim: 2 * self.output_dim]
+                # x_c = x[:, 2 * self.output_dim: 3 * self.output_dim]
+                # x_o = x[:, 3 * self.output_dim:]
+                x_i = x[:, :self.controller_output_dim]
+                x_f = x[:, self.controller_output_dim: 2 * self.controller_output_dim]
+                x_c = x[:, 2 * self.controller_output_dim: 3 * self.controller_output_dim]
+                x_o = x[:, 3 * self.controller_output_dim:]
             elif self.consume_less == 'mem':
                 x_i = K.dot(x * B_W[0], self.W_i) + self.b_i
                 x_f = K.dot(x * B_W[1], self.W_f) + self.b_f
@@ -371,6 +491,12 @@ class NTM(Recurrent):
 
     def get_config(self):
         config = {'output_dim': self.output_dim,
+                  'memory_dim': self.memory_dim,
+                  'memory_size': self.memory_size,
+                  'controller_output_dim': self.controller_output_dim,
+                  'location_shift_range': self.location_shift_range,
+                  'num_read_head': self.num_read_head,
+                  'num_write_head': self.num_write_head,
                   'init': self.init.__name__,
                   'inner_init': self.inner_init.__name__,
                   'forget_bias_init': self.forget_bias_init.__name__,
@@ -379,7 +505,10 @@ class NTM(Recurrent):
                   'W_regularizer': self.W_regularizer.get_config() if self.W_regularizer else None,
                   'U_regularizer': self.U_regularizer.get_config() if self.U_regularizer else None,
                   'b_regularizer': self.b_regularizer.get_config() if self.b_regularizer else None,
+                  'W_y_regularizer': self.W_y_regularizer.get_config() if self.W_y_regularizer else None,
+                  'W_xi_regularizer': self.W_xi_regularizer.get_config() if self.W_xi_regularizer else None,
+                  'W_r_regularizer': self.W_r_regularizer.get_config() if self.W_r_regularizer else None,
                   'dropout_W': self.dropout_W,
                   'dropout_U': self.dropout_U}
-        base_config = super(LSTM, self).get_config()
+        base_config = super(NTM, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
