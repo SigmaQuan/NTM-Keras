@@ -120,8 +120,10 @@ class NTM(Recurrent):
             # Comparing with the old self.states, there are four
             # additional item which represents external memory, writing
             # addressing, reading addressing and read_content correspondingly.
-            # h_tm1, c_tm1, B_U, B_W, M_tm1, w_w_tm1, w_r_tm1, r_tm1_list
-            self.states = [None, None, None, None, None, None, None, None]
+            # # h_tm1, c_tm1, B_U, B_W, M_tm1, w_w_tm1, w_r_tm1, r_tm1_list
+            # self.states = [None, None, None, None, None, None, None, None]
+            # h_tm1, c_tm1, M_tm1, w_w_tm1, w_r_tm1, r_tm1_list, B_U, B_W
+            self.states = [None, None, None, None, None, None]
             # add by Robot Steven ****************************************#
 
         if self.consume_less == 'gpu':
@@ -373,17 +375,25 @@ class NTM(Recurrent):
                         np.zeros((input_shape[0], self.controller_output_dim)))
             K.set_value(self.states[1],
                         np.zeros((input_shape[0], self.controller_output_dim)))
+            K.set_value(self.states[2],
+                        np.zeros((input_shape[0], self.memory_size, self.memory_dim)))
+            K.set_value(self.states[3],
+                        np.zeros((input_shape[0], self.num_write_head, self.memory_size)))
+            K.set_value(self.states[4],
+                        np.zeros((input_shape[0], self.num_read_head, self.memory_size)))
+            K.set_value(self.states[5],
+                        np.zeros((input_shape[0], self.num_read_head, self.memory_dim)))
             # add by Robot Steven ****************************************#
         else:
             # self.states = [K.zeros((input_shape[0], self.output_dim)),
             #                K.zeros((input_shape[0], self.output_dim))]
             # add by Robot Steven ****************************************#
-            self.states = [K.zeros((input_shape[0], self.output_dim)),  # h_tm1
-                           K.zeros((input_shape[0], self.output_dim))]  # c_tm1
-                           # K.zeros((input_shape[0], self.output_dim)),
-                           # K.zeros((input_shape[0], self.output_dim)),
-                           # K.zeros((input_shape[0], self.output_dim)),
-                           # K.zeros((input_shape[0], self.output_dim))]
+            self.states = [K.zeros((input_shape[0], self.controller_output_dim)),  # h_tm1
+                           K.zeros((input_shape[0], self.controller_output_dim)),  # c_tm1]
+                           K.zeros((input_shape[0], self.memory_size, self.memory_dim)),
+                           K.zeros((input_shape[0], self.num_write_head, self.memory_size)),
+                           K.zeros((input_shape[0], self.num_read_head, self.memory_size)),
+                           K.zeros((input_shape[0], self.num_read_head, self.memory_dim))]
             # add by Robot Steven ****************************************#
 
     def preprocess_input(self, x):
@@ -417,14 +427,14 @@ class NTM(Recurrent):
             return x
 
     def step(self, x, states):
-        h_tm1 = states[0]
-        c_tm1 = states[1]
-        B_U = states[2]
-        B_W = states[3]
-        M_tm1 = states[4]
-        w_w_tm1 = states[5]
-        w_r_tm1 = states[6]
-        r_tm1_list = states[7]
+        h_tm1 = states[0]       # previous inner memory
+        c_tm1 = states[1]       # previous inner cell
+        M_tm1 = states[2]       # previous external memory
+        w_w_tm1 = states[3]     # previous write addressing
+        w_r_tm1 = states[4]     # previous read addressing
+        r_tm1_list = states[5]  # previous read content list
+        B_U = states[6]         # dropout matrices for recurrent units
+        B_W = states[7]         # dropout matrices for output units
 
         if self.consume_less == 'gpu':
             z = K.dot(x * B_W[0], self.W) + K.dot(h_tm1 * B_U[0], self.U) + self.b
@@ -466,13 +476,19 @@ class NTM(Recurrent):
             o = self.inner_activation(x_o + K.dot(h_tm1 * B_U[3], self.U_o))
 
         h = o * self.activation(c)
+
+        # interface of controller.
+        v_t = K.dot(h, self.W_y)
+        xi_t = K.dot(h, self.W_xi)
+
+
         return h, [h, c]
 
     def get_constants(self, x):
         constants = []
         if 0 < self.dropout_U < 1:
             ones = K.ones_like(K.reshape(x[:, 0, 0], (-1, 1)))
-            ones = K.tile(ones, (1, self.output_dim))
+            ones = K.tile(ones, (1, self.controller_output_dim))
             B_U = [K.in_train_phase(K.dropout(ones, self.dropout_U), ones) for _ in range(4)]
             constants.append(B_U)
         else:
@@ -512,3 +528,6 @@ class NTM(Recurrent):
                   'dropout_U': self.dropout_U}
         base_config = super(NTM, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+    def get_memory(self, depth=None):
+        return None
