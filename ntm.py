@@ -5,17 +5,12 @@ from keras import backend as K
 from keras import activations, initializations, regularizers
 from keras.engine import Layer, InputSpec
 
-
 from keras.layers import Recurrent
-
-# import pydot_ng as pydot
-# pydot.print_function
-
 
 class NTM(Recurrent):
     def __init__(self, output_dim, memory_dim=128, memory_size=20,
                  controller_dim=100, location_shift_range=1,
-                 num_read_heads=1, num_write_heads=1,
+                 num_read_head=1, num_write_head=1,
                  init='glorot_uniform', inner_init='orthogonal',
                  forget_bias_init='one', activation='tanh',
                  inner_activation='hard_sigmoid',
@@ -24,18 +19,18 @@ class NTM(Recurrent):
                  W_xi_regularizer=None, W_r_regularizer=None,
                  dropout_W=0., dropout_U=0., **kwargs):
         """
-        Neural Turing Machines- Alex Graves et. al, 2014.
+        Neural Turing Machines - Alex Graves et. al, 2014.
             For a step-by-step description of the algorithm, see
             [this paper](https://arxiv.org/pdf/1410.5401.pdf).
         # Arguments
         :param output_dim: dimension of the internal projections and the
         final output.
-        :param memory_dim:
-        :param memory_size:
-        :param controller_dim:
-        :param location_shift_range:
-        :param num_read_heads:
-        :param num_write_heads:
+        :param memory_dim: the dimension of one item in the external memory.
+        :param memory_size: the size of total item in the external memory.
+        :param controller_dim: the dimension of controller networks.
+        :param location_shift_range: the location shift range.
+        :param num_read_heads: the number of read heads.
+        :param num_write_heads: the number of write heads.
         :param init: weight initialization function.
             Can be the name of an existing function (str), or a Theano
             function (see: [initializations](../initializations.md)).
@@ -73,12 +68,25 @@ class NTM(Recurrent):
         :param kwargs: non.
 
         # References
-            - [Long short-term memory](http://deeplearning.cs.cmu.edu/pdfs/Hochreiter97_lstm.pdf) (original 1997 paper)
-            - [Learning to forget: Continual prediction with LSTM](http://www.mitpressjournals.org/doi/pdf/10.1162/089976600300015015)
-            - [Supervised sequence labelling with recurrent neural networks](http://www.cs.toronto.edu/~graves/preprint.pdf)
-            - [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](http://arxiv.org/abs/1512.05287)
+            - [Neural Turing Machines](https://arxiv.org/pdf/1410.5401.pdf)
+            - [Hybrid computing using a neural network with dynamic
+              external memory]
+            (http://www.nature.com/nature/journal/v538/n7626/full/nature20101.html)
+            - [One-shot learning with memory-augmented neural networks]
+              (https://arxiv.org/pdf/1605.06065.pdf)
+            - [Scaling memory-augmented neural networks with sparse reads
+              and writes]
+              (https://arxiv.org/pdf/1610.09027.pdf)
         """
         self.output_dim = output_dim
+        # add by Robot Steven ********************************************#
+        self.memory_dim = memory_dim
+        self.memory_size = memory_size
+        self.controller_output_dim = controller_dim
+        self.location_shift_range = location_shift_range
+        self.num_read_head = num_read_head
+        self.num_write_head = num_write_head
+        # add by Robot Steven ********************************************#
         self.init = initializations.get(init)
         self.inner_init = initializations.get(inner_init)
         self.forget_bias_init = initializations.get(forget_bias_init)
@@ -87,17 +95,12 @@ class NTM(Recurrent):
         self.W_regularizer = regularizers.get(W_regularizer)
         self.U_regularizer = regularizers.get(U_regularizer)
         self.b_regularizer = regularizers.get(b_regularizer)
-        self.dropout_W, self.dropout_U = dropout_W, dropout_U
-
-        # add by Robot Steven ****************************************#
+        # add by Robot Steven ********************************************#
         self.W_y_regularizer = regularizers.get(W_y_regularizer)
         self.W_xi_regularizer = regularizers.get(W_xi_regularizer)
         self.W_r_regularizer = regularizers.get(W_r_regularizer)
-        self.memory_dim = memory_dim
-        self.memory_size = memory_size
-        self.location_shift_range = location_shift_range
-        # add by Robot Steven ****************************************#
-
+        # add by Robot Steven ********************************************#
+        self.dropout_W, self.dropout_U = dropout_W, dropout_U
         if self.dropout_W or self.dropout_U:
             self.uses_learning_phase = True
         super(NTM, self).__init__(**kwargs)
@@ -110,51 +113,138 @@ class NTM(Recurrent):
             self.reset_states()
         else:
             # initial states: 2 all-zero tensors of shape (output_dim)
-            # self.states = [None, None]
-
+            # self.states = [None, None]  ## commented by Robot Steven
             # add by Robot Steven ****************************************#
-            # Additional four item: Memory, writing addressing, reading
-            # addressing, read_content.
+            # Comparing with the old self.states, there are four
+            # additional item which represents external memory, writing
+            # addressing, reading addressing and read_content correspondingly.
             self.states = [None, None, None, None, None, None]
             # add by Robot Steven ****************************************#
 
         if self.consume_less == 'gpu':
-            self.W = self.init((self.input_dim, 4 * self.output_dim),
+            # self.W = self.init((self.input_dim, 4 * self.output_dim),
+            #                    name='{}_W'.format(self.name))
+            # self.U = self.inner_init((self.output_dim, 4 * self.output_dim),
+            #                          name='{}_U'.format(self.name))
+            #
+            # self.b = K.variable(np.hstack((np.zeros(self.output_dim),
+            #                                K.get_value(self.forget_bias_init(
+            #                                    (self.output_dim,))),
+            #                                np.zeros(self.output_dim),
+            #                                np.zeros(self.output_dim))),
+            #                     name='{}_b'.format(self.name))
+            # self.trainable_weights = [self.W, self.U, self.b]
+
+            # add by Robot Steven ****************************************#
+            self.W = self.init((self.input_dim,
+                                4 * self.controller_output_dim),
                                name='{}_W'.format(self.name))
-            self.U = self.inner_init((self.output_dim, 4 * self.output_dim),
+            self.U = self.inner_init((self.controller_output_dim,
+                                      4 * self.controller_output_dim),
                                      name='{}_U'.format(self.name))
 
-            self.b = K.variable(np.hstack((np.zeros(self.output_dim),
-                                           K.get_value(self.forget_bias_init((self.output_dim,))),
-                                           np.zeros(self.output_dim),
-                                           np.zeros(self.output_dim))),
-                                name='{}_b'.format(self.name))
-            self.trainable_weights = [self.W, self.U, self.b]
+            self.b = K.variable(
+                np.hstack((np.zeros(self.controller_output_dim),
+                           K.get_value(self.forget_bias_init(
+                               (self.controller_output_dim,))),
+                           np.zeros(self.controller_output_dim),
+                           np.zeros(self.controller_output_dim))),
+                name='{}_b'.format(self.name))
+            self.W_y = self.init((self.controller_output_dim,
+                                  self.output_dim),
+                                 name='{}_W_y'.format(self.name))
+            self.W_xi = self.init(
+                (self.controller_output_dim,
+                 self.num_read_head *
+                    # k_{r}, \beta_{r}, g_{r}, s_{r}, \gama_{r}
+                    (self.memory_dim + 1 + 1 +
+                     (self.location_shift_range*2+1) + 1)
+                 +
+                 self.num_write_head *
+                    # k_{w}, \beta_{w}, g_{w}, s_{w}, \gama_{w}, e_{w}, a_{w}
+                    (self.memory_dim + 1 + 1 +
+                     (self.location_shift_range*2+1) + 1 +
+                     self.memory_dim + self.memory_dim)
+                 ),
+                name='{}_W_y'.format(self.name))
+            self.W_r = self.init((self.num_read_head * self.memory_dim,
+                                  self.output_dim),
+                                 name='{}_W_y'.format(self.name))
+            self.trainable_weights = [self.W, self.U, self.b, self.W_y,
+                                      self.W_xi, self.W_r]
+            # add by Robot Steven ****************************************#
         else:
-            self.W_i = self.init((self.input_dim, self.output_dim),
-                                 name='{}_W_i'.format(self.name))
-            self.U_i = self.inner_init((self.output_dim, self.output_dim),
-                                       name='{}_U_i'.format(self.name))
-            self.b_i = K.zeros((self.output_dim,), name='{}_b_i'.format(self.name))
+            # self.W_i = self.init((self.input_dim, self.output_dim),
+            #                      name='{}_W_i'.format(self.name))
+            # self.U_i = self.inner_init((self.output_dim, self.output_dim),
+            #                            name='{}_U_i'.format(self.name))
+            # self.b_i = K.zeros((self.output_dim,), name='{}_b_i'.format(self.name))
+            #
+            # self.W_f = self.init((self.input_dim, self.output_dim),
+            #                      name='{}_W_f'.format(self.name))
+            # self.U_f = self.inner_init((self.output_dim, self.output_dim),
+            #                            name='{}_U_f'.format(self.name))
+            # self.b_f = self.forget_bias_init((self.output_dim,),
+            #                                  name='{}_b_f'.format(self.name))
+            #
+            # self.W_c = self.init((self.input_dim, self.output_dim),
+            #                      name='{}_W_c'.format(self.name))
+            # self.U_c = self.inner_init((self.output_dim, self.output_dim),
+            #                            name='{}_U_c'.format(self.name))
+            # self.b_c = K.zeros((self.output_dim,), name='{}_b_c'.format(self.name))
+            #
+            # self.W_o = self.init((self.input_dim, self.output_dim),
+            #                      name='{}_W_o'.format(self.name))
+            # self.U_o = self.inner_init((self.output_dim, self.output_dim),
+            #                            name='{}_U_o'.format(self.name))
+            # self.b_o = K.zeros((self.output_dim,), name='{}_b_o'.format(self.name))
+            #
+            # self.trainable_weights = [self.W_i, self.U_i, self.b_i,
+            #                           self.W_c, self.U_c, self.b_c,
+            #                           self.W_f, self.U_f, self.b_f,
+            #                           self.W_o, self.U_o, self.b_o]
+            #
+            # self.W = K.concatenate([self.W_i, self.W_f, self.W_c, self.W_o])
+            # self.U = K.concatenate([self.U_i, self.U_f, self.U_c, self.U_o])
+            # self.b = K.concatenate([self.b_i, self.b_f, self.b_c, self.b_o])
 
-            self.W_f = self.init((self.input_dim, self.output_dim),
-                                 name='{}_W_f'.format(self.name))
-            self.U_f = self.inner_init((self.output_dim, self.output_dim),
-                                       name='{}_U_f'.format(self.name))
-            self.b_f = self.forget_bias_init((self.output_dim,),
-                                             name='{}_b_f'.format(self.name))
+            self.W_i = self.init(
+                (self.input_dim, self.controller_output_dim),
+                name='{}_W_i'.format(self.name))
+            self.U_i = self.inner_init(
+                (self.controller_output_dim, self.controller_output_dim),
+                name='{}_U_i'.format(self.name))
+            self.b_i = K.zeros(
+                (self.controller_output_dim,),
+                name='{}_b_i'.format(self.name))
 
-            self.W_c = self.init((self.input_dim, self.output_dim),
-                                 name='{}_W_c'.format(self.name))
-            self.U_c = self.inner_init((self.output_dim, self.output_dim),
-                                       name='{}_U_c'.format(self.name))
-            self.b_c = K.zeros((self.output_dim,), name='{}_b_c'.format(self.name))
+            self.W_f = self.init(
+                (self.input_dim, self.controller_output_dim),
+                name='{}_W_f'.format(self.name))
+            self.U_f = self.inner_init(
+                (self.controller_output_dim, self.controller_output_dim),
+                name='{}_U_f'.format(self.name))
+            self.b_f = self.forget_bias_init(
+                (self.controller_output_dim,),
+                name='{}_b_f'.format(self.name))
 
-            self.W_o = self.init((self.input_dim, self.output_dim),
-                                 name='{}_W_o'.format(self.name))
-            self.U_o = self.inner_init((self.output_dim, self.output_dim),
-                                       name='{}_U_o'.format(self.name))
-            self.b_o = K.zeros((self.output_dim,), name='{}_b_o'.format(self.name))
+            self.W_c = self.init(
+                (self.input_dim, self.controller_output_dim),
+                name='{}_W_c'.format(self.name))
+            self.U_c = self.inner_init(
+                (self.controller_output_dim, self.controller_output_dim),
+                name='{}_U_c'.format(self.name))
+            self.b_c = K.zeros((self.controller_output_dim,),
+                               name='{}_b_c'.format(self.name))
+
+            self.W_o = self.init(
+                (self.input_dim, self.controller_output_dim),
+                name='{}_W_o'.format(self.name))
+            self.U_o = self.inner_init(
+                (self.controller_output_dim, self.controller_output_dim),
+                name='{}_U_o'.format(self.name))
+            self.b_o = K.zeros((self.controller_output_dim,),
+                               name='{}_b_o'.format(self.name))
 
             self.trainable_weights = [self.W_i, self.U_i, self.b_i,
                                       self.W_c, self.U_c, self.b_c,
