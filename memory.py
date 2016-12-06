@@ -1,9 +1,10 @@
 from keras import backend as K
 import numpy as np
+import math
 
 
 def initial(number_of_memory_locations, memory_vector_size):
-    return K.random_uniform(
+    return K.zeros(
         (number_of_memory_locations, memory_vector_size), 0, 1)
 
 
@@ -35,7 +36,7 @@ def addressing(
         weight_t_1, weight_content_t, interpolation_gate_t)
 
     # Convolutional Shift
-    _weight_t = convolutional_shift(weight_gated_t, shift_weight_t)
+    _weight_t = circular_convolutional_shift(weight_gated_t, shift_weight_t)
 
     # Sharpening
     weight_t = sharpen(_weight_t, scalar_t)
@@ -54,9 +55,9 @@ def softmax(x):
 def content_addressing(memory_t,  key_vector_t, key_strength_t):
     '''
     Focusing by content.
-    :param memory_t:
-    :param key_vector_t:
-    :param key_strength_t:
+    :param memory_t: external memory.
+    :param key_vector_t: key vector.
+    :param key_strength_t: the strength of key.
     :return:
     '''
     _weight_content_t = \
@@ -68,9 +69,9 @@ def content_addressing(memory_t,  key_vector_t, key_strength_t):
 def interpolation(weight_t_1, weight_content_t, interpolation_gate_t):
     '''
     Focusing by location.
-    :param weight_t_1:
-    :param weight_content_t:
-    :param interpolation_gate_t:
+    :param weight_t_1: the weight value at time-step t-1
+    :param weight_content_t: the weight get by content-based addressing.
+    :param interpolation_gate_t: the interpolation gate.
     :return:
     '''
     weight_gated_t = interpolation_gate_t * weight_content_t + \
@@ -78,26 +79,50 @@ def interpolation(weight_t_1, weight_content_t, interpolation_gate_t):
     return weight_gated_t
 
 
-def convolutional_shift(weight_gated_t, shift_weight_t):
+def circular_convolutional_shift(weight_gated_t, shift_weight_t):
     '''
     Convolutional shift.
-    :param weight_gated_t:
-    :param shift_weight_t:
-    :return:
+    :param weight_gated_t: the weight vector.
+    :param shift_weight_t: it defines a normalised distribution over the
+    allowed integer shifts (location shift range).
+    :return: the shifted weight.
     '''
-    _weight_t = K.zeros(weight_gated_t.shape)
-    for i in np.arange(weight_gated_t.shape[0]):
-        for j in np.arnage(shift_weight_t.shape[0]):
-            _weight_t[i] += weight_gated_t[j] * shift_weight_t[i - j]
+    size = int(weight_gated_t.get_shape()[0])
+    kernel_size = int(shift_weight_t.get_shape()[0])
+    kernel_shift = int(math.floor(kernel_size/2.0))
+
+    def loop(idx):
+        if idx < 0:
+            return size + idx
+        if idx >= size:
+            return idx - size
+        else:
+            return idx
+
+    _weight_t = K.zeros(size)
+    for i in xrange(size):
+        indices = [loop(i+j) for j in xrange(kernel_shift, -kernel_shift-1, -1)]
+        weight_gated_t_ = K.gather(weight_gated_t, indices)
+        _weight_t[i] = K.reduce_sum(weight_gated_t_ * shift_weight_t, 0)[0]
+
     return _weight_t
 
 
-def sharpen(_weight_t, scalar_t):
+def sharpen(_weight_t, scalar_gama_t):
     '''
-
-    :param _weight_t:
-    :param scalar_t:
-    :return:
+    The convolution operation in convolutional shift can cause leakage or
+    dispersion of weights over time if the shift weighting is no sharp.
+    For example, if shift of -1, 0 and 1 are given weights of 0.1, 0.8,
+    and 0.1, the rotation will transform a weighting focused at single
+    point into one slightly blurred over three points. To combat this,
+    each head emits one further scalar \gama >= 1 whose effect is sharpen
+    the final weighting as follows:
+    $$w_{i}^{(t)} = \frac{(\hat{w}_{i}^{(t)})^{\gama}}
+    {\sum_{j}\hat{w}_{j}^{(t)})^{\gama}}$$
+    :param _weight_t: the weight vector which denotes a memory address.
+    :param scalar_gama_t: the scalar for sharpen.
+    :return: the sharpened weight.
     '''
-    weight_t = K.pow(_weight_t, scalar_t)
+    weight_t = K.pow(_weight_t, scalar_gama_t)
     return weight_t / K.sum(weight_t)
+

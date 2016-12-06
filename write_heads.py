@@ -4,7 +4,7 @@ from keras import backend as K
 def writing(memory_t_1, weight_t, eraser_t, adder_t):
     """
     Each writing process contain two parts: an erase followed by an add.
-    :param memory_t_1: the $N \times M$ memory matrix at time $t$, where $N$
+    :param memory_t_1: the $N \times M$ memory matrix at time $t-1$, where $N$
     is the number of memory locations, and $M$ is the vector size at each
     location.
     :param weight_t: $w_t$ is a vector of weightings over the $N$ locations
