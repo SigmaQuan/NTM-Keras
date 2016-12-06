@@ -21,6 +21,7 @@ from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
+import ntm                                    # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
