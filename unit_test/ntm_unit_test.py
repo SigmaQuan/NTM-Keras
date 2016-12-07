@@ -21,7 +21,8 @@ from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
-import ntm                                    # Add by Steven Robot
+# import ntm                                   # Add by Steven Robot
+import lstm2ntm                              # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
@@ -37,7 +38,7 @@ MAX_INPUT_LENGTH = (ITEM_SIZE+1) * (MAX_EPISODE_SIZE+2)
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
 # RNN = recurrent.LSTM
-RNN = ntm.NTM
+RNN = lstm2ntm.NTM
 HIDDEN_SIZE = 256
 LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
@@ -90,7 +91,8 @@ model = Sequential()
 # use input_shape=(None, nb_feature).
 model.add(RNN(
     input_shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE+2),
-    output_dim=INPUT_DIMENSION_SIZE+2,
+    # output_dim=INPUT_DIMENSION_SIZE+2,
+    output_dim=MEMORY_DIM,
     memory_dim=MEMORY_DIM,
     memory_size=MEMORY_SIZE,
     controller_output_dim=CONTROLLER_OUTPUT_DIM,
@@ -118,7 +120,7 @@ model.add(RNN(
 #     model.add(RNN(HIDDEN_SIZE, return_sequences=True))
 
 # For each of step of the output sequence, decide which character should be chosen
-# model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
+model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
 # model.add(Activation('softmax'))
 # model.add(Activation('hard_sigmoid'))
 model.add(Activation('sigmoid'))
