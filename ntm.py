@@ -426,11 +426,11 @@ class NTM(Recurrent):
             K.set_value(self.states[2],
                         np.zeros((input_shape[0], self.memory_size, self.memory_dim)))
             K.set_value(self.states[3],
-                        np.zeros((input_shape[0], self.num_write_head, self.memory_size)))
+                        np.zeros((input_shape[0], self.num_write_head * self.memory_size)))
             K.set_value(self.states[4],
-                        np.zeros((input_shape[0], self.num_read_head, self.memory_size)))
+                        np.zeros((input_shape[0], self.num_read_head * self.memory_size)))
             K.set_value(self.states[5],
-                        np.zeros((input_shape[0], self.num_read_head, self.memory_dim)))
+                        np.zeros((input_shape[0], self.num_read_head * self.memory_dim)))
             # add by Robot Steven ****************************************#
         else:
             # self.states = [K.zeros((input_shape[0], self.output_dim)),
@@ -439,9 +439,9 @@ class NTM(Recurrent):
             self.states = [K.zeros((input_shape[0], self.controller_output_dim)),  # h_tm1
                            K.zeros((input_shape[0], self.controller_output_dim)),  # c_tm1]
                            K.zeros((input_shape[0], self.memory_size, self.memory_dim)),
-                           K.zeros((input_shape[0], self.num_write_head, self.memory_size)),
-                           K.zeros((input_shape[0], self.num_read_head, self.memory_size)),
-                           K.zeros((input_shape[0], self.num_read_head, self.memory_dim))]
+                           K.zeros((input_shape[0], self.num_write_head * self.memory_size)),
+                           K.zeros((input_shape[0], self.num_read_head * self.memory_size)),
+                           K.zeros((input_shape[0], self.num_read_head * self.memory_dim))]
             # add by Robot Steven ****************************************#
 
     def preprocess_input(self, x):
@@ -565,37 +565,47 @@ class NTM(Recurrent):
         xi_e_w = K.dot(h, self.W_xi_e_w)
         xi_a_w = K.dot(h, self.W_xi_a_w)
 
-        # # get the addressing for writing
-        # w_w_t = EM.addressing(memory_tm1, w_w_tm1, xi_k_w, xi_beta_w, xi_g_w,
-        #                       xi_s_w, xi_gama_w)
-        #
-        # # update the memory
-        # memory_t = Writer.writing(memory_tm1, w_w_t, xi_e_w, xi_a_w)
-        #
-        # # get the addressing for reading
-        # w_r_t = EM.addressing(memory_t, w_r_tm1, xi_k_r, xi_beta_r, xi_g_r,
-        #                       xi_s_r, xi_gama_r)
-        #
-        # # read from memory
-        # r_t_list = Reader.reading(memory_t, w_r_t)
-
+        # for single head
         # get the addressing for writing
-        w_w_t = EM.batch_addressing(
-            self.num_write_head, self.memory_size, memory_tm1,
-            w_w_tm1, xi_k_w, xi_beta_w, xi_g_w, xi_s_w, xi_gama_w)
+        w_w_t = EM.addressing(memory_tm1, self.memory_dim, self.memory_size,
+                              w_w_tm1, xi_k_w, xi_beta_w, xi_g_w,
+                              xi_s_w, xi_gama_w, self.location_shift_range)
+        print("Memory at time-step t-1")
+        print(memory_tm1)
 
         # update the memory
-        memory_t = Writer.batch_writing(
-            self.num_write_head, self.memory_size, self.memory_dim,
-            memory_tm1, w_w_t, xi_e_w, xi_a_w)
+        memory_t = Writer.writing(memory_tm1, w_w_t, xi_e_w, xi_a_w)
+        print("Memory at time-step t")
+        print(memory_tm1)
 
         # get the addressing for reading
-        w_r_t = EM.batch_addressing(
-            self.num_write_head, self.memory_size, memory_t,
-            w_r_tm1, xi_k_r, xi_beta_r, xi_g_r, xi_s_r, xi_gama_r)
+        w_r_t = EM.addressing(memory_t, self.memory_dim, self.memory_size,
+                              w_r_tm1, xi_k_r, xi_beta_r, xi_g_r,
+                              xi_s_r, xi_gama_r, self.location_shift_range)
+        # w_r_t = w_w_t
 
         # read from memory
-        r_t_list = Reader.batch_reading(memory_t, w_r_t)
+        r_t_list = Reader.reading(memory_t, w_r_t)
+        # r_t_list = Reader.reading(memory_t, w_w_t)
+
+        # # for multi-heads
+        # # get the addressing for writing
+        # w_w_t = EM.batch_addressing(
+        #     self.num_write_head, self.memory_size, memory_tm1,
+        #     w_w_tm1, xi_k_w, xi_beta_w, xi_g_w, xi_s_w, xi_gama_w)
+        #
+        # # update the memory
+        # memory_t = Writer.batch_writing(
+        #     self.num_write_head, self.memory_size, self.memory_dim,
+        #     memory_tm1, w_w_t, xi_e_w, xi_a_w)
+        #
+        # # get the addressing for reading
+        # w_r_t = EM.batch_addressing(
+        #     self.num_write_head, self.memory_size, memory_t,
+        #     w_r_tm1, xi_k_r, xi_beta_r, xi_g_r, xi_s_r, xi_gama_r)
+        #
+        # # read from memory
+        # r_t_list = Reader.batch_reading(memory_t, w_r_t)
 
         # calculate output
         y = v_t + K.dot(r_t_list, self.W_r)

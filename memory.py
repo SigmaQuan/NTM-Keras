@@ -2,6 +2,7 @@ from keras import backend as K
 from theano import tensor as T
 import numpy as np
 import math
+import theano
 
 
 def initial(number_of_memory_locations, memory_vector_size):
@@ -49,13 +50,56 @@ def batch_addressing(
 
     return w_w_t
 
+#
+# def addressing(
+#         memory_t,
+#         weight_t_1,
+#         key_vector_t, key_strength_t,
+#         interpolation_gate_t,
+#         shift_weight_t,
+#         scalar_t):
+#     """
+#     Addressing mechanisms.
+#     :param memory_t: memory matrix at time t.
+#     :param weight_t_1: memory weight at time t-1.
+#     :param key_vector_t: key vector at time t.
+#     :param key_strength_t: strength of key vector at time t.
+#     :param interpolation_gate_t: interpolation gate at time t.
+#     :param shift_weight_t: shift weight at time t.
+#     :param scalar_t: scalar at time t.
+#     :return: a weight vector at time t.
+#     """
+#     # Content addressing
+#     weight_content_t = content_addressing(
+#         memory_t, key_vector_t, key_strength_t)
+#     print("weight_content_t")
+#     print(weight_content_t)
+#
+#     # Interpolation
+#     weight_gated_t = interpolation(
+#         weight_t_1, weight_content_t, interpolation_gate_t)
+#     print("weight_content_t")
+#     print(weight_gated_t)
+#
+#
+#     # Convolutional Shift
+#     _weight_t = circular_convolutional_shift(weight_gated_t, shift_weight_t)
+#
+#     # Sharpening
+#     weight_t = sharpen(_weight_t, scalar_t)
+#
+#     return weight_t
+
 
 def addressing(
         memory_t,
+        memory_dim,
+        memory_size,
         weight_t_1,
         key_vector_t, key_strength_t,
         interpolation_gate_t,
         shift_weight_t,
+        shift_range,
         scalar_t):
     """
     Addressing mechanisms.
@@ -77,25 +121,42 @@ def addressing(
     # Interpolation
     weight_gated_t = interpolation(
         weight_t_1, weight_content_t, interpolation_gate_t)
-    print("weight_content_t")
+    print("weight_gated_t")
     print(weight_gated_t)
 
-
     # Convolutional Shift
-    _weight_t = circular_convolutional_shift(weight_gated_t, shift_weight_t)
+    _weight_t = circular_convolutional_shift(
+        weight_gated_t, shift_weight_t, memory_size, shift_range)
+    print("_weight_t")
+    print(_weight_t)
 
     # Sharpening
     weight_t = sharpen(_weight_t, scalar_t)
+    print("weight_t")
+    print(weight_t)
 
     return weight_t
 
 
 def cosine_similarity(u, v):
-    return K.dot(u, v) / (K.sum(K.abs(u), axis=1) * K.sum(K.abs(v), axis=1))
+    similairty = K.dot(v, u) / (K.sum(K.abs(u), axis=1) * K.sum(K.abs(v), axis=1))
+    # similairty = K.dot(u, v) / (K.sum(K.abs(u), axis=1) * K.sum(K.abs(v), axis=1))
+    print("u")
+    print(u)
+    print("v")
+    print(v)
+    print("similairty")
+    print(similairty)
+    return similairty
 
 
 def softmax(x):
-    return K.softmax(x)
+    print("x")
+    print(x)
+    _softmax = K.softmax(x)
+    print("softmax(x)")
+    print(_softmax)
+    return _softmax
 
 
 def content_addressing(memory_t,  key_vector_t, key_strength_t):
@@ -106,6 +167,13 @@ def content_addressing(memory_t,  key_vector_t, key_strength_t):
     :param key_strength_t: the strength of key.
     :return:
     '''
+    print("content addressing:")
+    print(">>memory_t")
+    print(key_vector_t)
+    print(">>key_vector_t")
+    print(key_vector_t)
+    print(">>key_strength_t")
+    print(key_strength_t)
     _weight_content_t = \
         key_strength_t * cosine_similarity(key_vector_t, memory_t)
     weight_content_t = softmax(_weight_content_t)
@@ -124,77 +192,91 @@ def interpolation(weight_t_1, weight_content_t, interpolation_gate_t):
                      (1 - interpolation_gate_t) * weight_t_1
     return weight_gated_t
 
-    # shift_conv = scipy.linalg.circulant(np.arange(mem_size)).T[
-    #         np.arange(-(shift_width // 2), (shift_width // 2) + 1)
-    #     ][::-1]
-    #
-    # def log_shift_convolve(log_weight, log_shift):
-    #     # weight: batch_size x mem_size
-    #     # shift:  batch_size x shift_width
-    #     log_shift = log_shift.dimshuffle(0,1,'x')
-    #     log_weight_windows = log_weight[:,shift_conv]
-    #     # batch_size x shift_width x mem_size
-    #     log_shifted_weight = ops.log_sum_exp(log_shift + log_weight_windows,axis=1)
-    #     return log_shifted_weight
 
-#
-# def circular_convolution(v, k):
+def circular_convolutional_shift(v, k, n, m):
+    """Computes circular convolution.
+    Args:
+        v: a 1-D `Tensor` (vector)
+        k: a 1-D `Tensor` (kernel)
+    """
+    # size = int(v.get_shape()[0])
+    # kernel_size = int(k.get_shape()[0])
+    # kernel_shift = int(math.floor(kernel_size/2.0))
+    size = n
+    kernel_size = m
+    kernel_shift = (kernel_size + 1)/2.0
+    shift_range = T.argmax(k) - kernel_shift
+
+    def loop(idx):
+        if T.lt(idx, 0):
+            return size + idx
+        if T.ge(idx, size):
+            return idx - size
+        else:
+            return idx
+
+    kernels = []
+    for i in T.xrange(size):
+        indices = loop(i + shift_range)
+        index = theano.tensor.cast(indices, 'int64')
+        v_ = v[index]
+        kernels.append(v_)
+
+    return kernels
+
+# def circular_convolutional_shift(v, k, n, m):
 #     """Computes circular convolution.
-#
 #     Args:
 #         v: a 1-D `Tensor` (vector)
 #         k: a 1-D `Tensor` (kernel)
 #     """
-#     size = int(v.get_shape()[0])
-#     kernel_size = int(k.get_shape()[0])
-#     kernel_shift = int(math.floor(kernel_size/2.0))
+#     # size = int(v.get_shape()[0])
+#     # kernel_size = int(k.get_shape()[0])
+#     # kernel_shift = int(math.floor(kernel_size/2.0))
+#     size = n
+#     kernel_size = m
+#     kernel_shift = (kernel_size + 1)/2.0
+#
+#     # def loop(idx):
+#     #     if idx < 0:
+#     #         return size + idx
+#     #     if idx >= size:
+#     #         return idx - size
+#     #     else:
+#     #         return idx
 #
 #     def loop(idx):
-#         if idx < 0: return size + idx
-#         if idx >= size : return idx - size
-#         else: return idx
+#         if idx < 0:
+#             return size + idx
+#         if T.ge(idx, size):
+#             return idx - size
+#         else:
+#             return idx
 #
 #     kernels = []
-#     for i in xrange(size):
-#         indices = [loop(i+j) for j in xrange(kernel_shift, -kernel_shift-1, -1)]
-#         v_ = tf.gather(v, indices)
-#         kernels.append(tf.reduce_sum(v_ * k, 0))
+#     # range_list = T.xrange(kernel_shift, -kernel_shift-1, -1)
+#     # range_list = theano.tensor.arange(kernel_shift, -kernel_shift-1, -1)
+#     #
+#     # range_list_, updates_ = theano.scan(lambda i, d: T.sub(m, i), sequences=k)
+#     # range_list = theano.function(inputs=[m, k], outputs=range_list_)
+#     #
 #
-#     # # code with double loop
-#     # for i in xrange(size):
-#     #     for j in xrange(kernel_size):
-#     #         idx = i + kernel_shift - j + 1
-#     #         if idx < 0: idx = idx + size
-#     #         if idx >= size: idx = idx - size
-#     #         w = tf.gather(v, int(idx)) * tf.gather(kernel, j)
-#     #         output = tf.scatter_add(output, [i], tf.reshape(w, [1, -1]))
+#     my_range_max = T.iscalar('my_range_max')
+#     my_range = T.arange(my_range_max)
+#     get_range_list = theano.function(inputs=[my_range_max], outputs=my_range)
+#     range_list = get_range_list(kernel_size)
 #
-#     return tf.dynamic_stitch([i for i in xrange(size)], kernels)
+#     # range_list = T.arange(m)
+#
+#     for i in T.xrange(size):
+#         results, updates = theano.scan(lambda r: loop(T.add(r, i)), sequences=range_list)
+#         indices = theano.function(inputs=[i, range_list], outputs=results)
+#
+#         v_ = T.gather(v, indices)
+#         kernels.append(T.reduce_sum(v_ * k, 0))
+#
+#     return T.dynamic_stitch([i for i in T.xrange(size)], kernels)
 
-
-def circular_convolutional_shift(weight_gated_t, shift_weight_t):
-    '''
-    Convolutional shift.
-    :param weight_gated_t: the weight vector.
-    :param shift_weight_t: it defines a normalised distribution over the
-    allowed integer shifts (location shift range).
-    :return: the shifted weight.
-    '''
-    print(weight_gated_t)
-    print(shift_weight_t)
-    print(T.shape(weight_gated_t))
-    print(T.shape(shift_weight_t))
-    N = T.shape(weight_gated_t)[0]
-    shift = 2. * shift_weight_t - 1.
-    z = T.mod(shift + N, N)
-    shift_t_imj = 1 - (z - T.floor(z))
-    # imj = K.mod(K.arange(N) + K.iround(K.floor(z)), N)
-    weight_gated_t_roll_1 = T.roll(weight_gated_t, -T.iround(T.floor(z)))
-    weight_gated_t_roll_2 = T.roll(weight_gated_t, -(T.iround(T.floor(z)) + 1))
-    _weight_t = weight_gated_t_roll_1 * shift_t_imj + \
-                weight_gated_t_roll_2 * (1 - shift_t_imj)
-
-    return _weight_t
 
 def sharpen(_weight_t, scalar_gama_t):
     '''
