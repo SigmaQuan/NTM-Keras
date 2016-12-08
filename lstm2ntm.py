@@ -8,8 +8,7 @@ from keras.engine import Layer, InputSpec
 from keras.layers import Recurrent
 from keras.layers import time_distributed_dense
 import memory as EM
-import read_heads as Reader
-import write_heads as Writer
+import head
 
 
 class NTM(Recurrent):

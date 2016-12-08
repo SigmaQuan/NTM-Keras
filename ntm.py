@@ -8,8 +8,7 @@ from keras.engine import Layer, InputSpec
 from keras.layers import Recurrent
 from keras.layers import time_distributed_dense
 import memory as EM
-import read_heads as Reader
-import write_heads as Writer
+import head
 
 
 class NTM(Recurrent):
@@ -574,7 +573,7 @@ class NTM(Recurrent):
         print(memory_tm1)
 
         # update the memory
-        memory_t = Writer.writing(memory_tm1, w_w_t, xi_e_w, xi_a_w)
+        memory_t = head.writing(memory_tm1, w_w_t, xi_e_w, xi_a_w)
         print("Memory at time-step t")
         print(memory_tm1)
 
@@ -585,7 +584,7 @@ class NTM(Recurrent):
         # w_r_t = w_w_t
 
         # read from memory
-        r_t_list = Reader.reading(memory_t, w_r_t)
+        r_t_list = head.reading(memory_t, w_r_t)
         # r_t_list = Reader.reading(memory_t, w_w_t)
 
         # # for multi-heads

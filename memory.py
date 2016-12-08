@@ -6,8 +6,7 @@ import theano
 
 
 def initial(number_of_memory_locations, memory_vector_size):
-    return K.zeros(
-        (number_of_memory_locations, memory_vector_size), 0, 1)
+    return K.zeros((number_of_memory_locations, memory_vector_size))
 
 
 def batch_addressing(
