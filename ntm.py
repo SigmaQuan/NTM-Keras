@@ -594,7 +594,7 @@ class NTM(Recurrent):
         #     w_w_tm1, xi_k_w, xi_beta_w, xi_g_w, xi_s_w, xi_gama_w)
         #
         # # update the memory
-        # memory_t = Writer.batch_writing(
+        # memory_t = head.batch_writing(
         #     self.num_write_head, self.memory_size, self.memory_dim,
         #     memory_tm1, w_w_t, xi_e_w, xi_a_w)
         #
@@ -604,7 +604,7 @@ class NTM(Recurrent):
         #     w_r_tm1, xi_k_r, xi_beta_r, xi_g_r, xi_s_r, xi_gama_r)
         #
         # # read from memory
-        # r_t_list = Reader.batch_reading(memory_t, w_r_t)
+        # r_t_list = head.batch_reading(memory_t, w_r_t)
 
         # calculate output
         y = v_t + K.dot(r_t_list, self.W_r)
