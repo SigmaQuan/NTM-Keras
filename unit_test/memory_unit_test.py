@@ -46,5 +46,3 @@ print(y)
 print(a)
 print(b)
 print(c)
-
-
