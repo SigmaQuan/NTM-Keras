@@ -19,13 +19,32 @@ import head
 #
 
 
-def logistic(x):
-    s = 1 / (1 + K.exp(x))
-    log = theano.function([x], s)
-    return log
-    # return s
+# def logistic(x):
+#     s = 1 / (1 + K.exp(x))
+#     log = theano.function([x], s)
+#     return log
+#     # return s
+#
+# x = [[0, 1], [-1, -2]]
+# print logistic(x)
 
-x = [[0, 1], [-1, -2]]
-print logistic(x)
+
+x = T.matrix('x')
+y = T.matrix('y')
+a = T.vector('a')
+b = T.dot(x, y)
+c = T.dot(x, a)
+
+print(x)
+print(y)
+print(a)
+print(b)
+print(c)
+
+print(x.shape)
+print(y)
+print(a)
+print(b)
+print(c)
 
 
