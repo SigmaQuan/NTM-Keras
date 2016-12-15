@@ -115,46 +115,61 @@ def addressing(
     weight_content_t = content_addressing(
         memory_t, key_vector_t, key_strength_t)
     print("weight_content_t")
-    print(weight_content_t)
+    # print(weight_content_t)
 
     # Interpolation
     weight_gated_t = interpolation(
         weight_t_1, weight_content_t, interpolation_gate_t)
     print("weight_gated_t")
-    print(weight_gated_t)
+    # print(weight_gated_t)
 
     # Convolutional Shift
     _weight_t = circular_convolutional_shift(
         weight_gated_t, shift_weight_t, memory_size, shift_range)
     print("_weight_t")
-    print(_weight_t)
+    # print(_weight_t)
 
     # Sharpening
     weight_t = sharpen(_weight_t, scalar_t)
     print("weight_t")
-    print(weight_t)
+    # print(weight_t)
 
     return weight_t
 
 
+def cosine_similarity_group(u, V):
+    similairty = K.dot(u, V) / (K.sum(K.abs(u)) * K.sum(K.abs(V), axis=0))
+    # import numpy as np
+    # u = np.random.random((3))
+    # V = np.random.random((3, 4))
+    # sim = np.dot(u, V) / (sum(abs(u)) * np.sum(abs(V), axis=0))
+    # print("u")
+    # print(u)
+    # print("V")
+    # print(V)
+    # print("similairty")
+    # print(similairty)
+    return similairty
+
+
 def cosine_similarity(u, v):
-    similairty = K.dot(v, u) / (K.sum(K.abs(u), axis=1) * K.sum(K.abs(v), axis=1))
+    similairty = K.dot(u, v) / (K.sum(K.abs(u)) * K.sum(K.abs(v), axis=0))
     # similairty = K.dot(u, v) / (K.sum(K.abs(u), axis=1) * K.sum(K.abs(v), axis=1))
-    print("u")
-    print(u)
-    print("v")
-    print(v)
-    print("similairty")
-    print(similairty)
+    # print("u")
+    # print(u)
+    # print("v")
+    # print(v)
+    # print("similairty")
+    # print(similairty)
     return similairty
 
 
 def softmax(x):
-    print("x")
-    print(x)
+    # print("x")
+    # print(x)
     _softmax = K.softmax(x)
-    print("softmax(x)")
-    print(_softmax)
+    # print("softmax(x)")
+    # print(_softmax)
     return _softmax
 
 
@@ -166,16 +181,18 @@ def content_addressing(memory_t,  key_vector_t, key_strength_t):
     :param key_strength_t: the strength of key.
     :return:
     '''
-    print("content addressing:")
-    print(">>memory_t")
-    print(key_vector_t)
-    print(">>key_vector_t")
-    print(key_vector_t)
-    print(">>key_strength_t")
-    print(key_strength_t)
+    # print("content addressing:")
+    # print(">>memory_t")
+    # print(key_vector_t)
+    # print(">>key_vector_t")
+    # print(key_vector_t)
+    # print(">>key_strength_t")
+    # print(key_strength_t)
     _weight_content_t = \
-        key_strength_t * cosine_similarity(key_vector_t, memory_t)
+        key_strength_t * cosine_similarity_group(key_vector_t, memory_t)
     weight_content_t = softmax(_weight_content_t)
+    # print("_weight_content_t")
+    # print(_weight_content_t)
     return weight_content_t
 
 
@@ -188,7 +205,7 @@ def interpolation(weight_t_1, weight_content_t, interpolation_gate_t):
     :return:
     '''
     weight_gated_t = interpolation_gate_t * weight_content_t + \
-                     (1 - interpolation_gate_t) * weight_t_1
+                     (1.0 - interpolation_gate_t) * weight_t_1
     return weight_gated_t
 
 

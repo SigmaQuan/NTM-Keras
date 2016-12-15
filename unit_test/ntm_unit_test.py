@@ -21,8 +21,8 @@ from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
-# import ntm                                   # Add by Steven Robot
-import lstm2ntm                              # Add by Steven Robot
+import ntm                                   # Add by Steven Robot
+# import lstm2ntm                              # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
@@ -38,7 +38,8 @@ MAX_INPUT_LENGTH = (ITEM_SIZE+1) * (MAX_EPISODE_SIZE+2)
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
 # RNN = recurrent.LSTM
-RNN = lstm2ntm.NTM
+# RNN = lstm2ntm.NTM
+RNN = ntm.NTM
 HIDDEN_SIZE = 256
 LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES

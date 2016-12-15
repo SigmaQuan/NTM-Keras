@@ -1,4 +1,5 @@
 from keras import backend as K
+import theano.tensor as T
 
 
 def batch_reading(head_num, memory_size, memory_dim, memory_t, weight_t):
@@ -104,7 +105,8 @@ def erase(memory_t_1, weight_t, eraser_t):
     :param eraser_t:
     :return:
     '''
-    memory = memory_t_1 * (1 - weight_t * eraser_t)
+    memory = memory_t_1 - T.outer(eraser_t, weight_t)
+    # memory = memory_t_1 * (1 - weight_t * eraser_t)
     return memory
 
 
@@ -116,5 +118,6 @@ def add(_memory_t, weight_t, adder_t):
     :param adder_t:
     :return:
     '''
-    memory_t = _memory_t + weight_t * adder_t
+    memory_t = _memory_t + T.outer(adder_t, weight_t)
+    # memory_t = _memory_t + weight_t * adder_t
     return memory_t

@@ -127,11 +127,15 @@ class NTM(Recurrent):
         super(NTM, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        print("begin build(self, input_shape)")
         self.input_spec = [InputSpec(shape=input_shape)]
         self.input_dim = input_shape[2]
+        print("input_shape")
+        print(input_shape[0], input_shape[1], input_shape[2])
 
         if self.stateful:
             self.reset_states()
+            print("\t stateful=true")
         else:
             # initial states: 2 all-zero tensors of shape (output_dim)
             # self.states = [None, None]  ## commented by Robot Steven
@@ -140,10 +144,10 @@ class NTM(Recurrent):
             # additional item which represents external memory, writing
             # addressing, reading addressing and read_content correspondingly.
             # # h_tm1, c_tm1, B_U, B_W, M_tm1, w_w_tm1, w_r_tm1, r_tm1_list
-            # self.states = [None, None, None, None, None, None, None, None]
+            self.states = [None, None, None, None, None, None, None, None]
             # h_tm1, c_tm1, M_tm1, w_w_tm1, w_r_tm1, r_tm1_list, B_U, B_W
             self.depth = 0
-            self.states = [None, None, None, None, None, None]
+            # self.states = [None, None, None, None, None, None]
             # add by Robot Steven ****************************************#
 
         if self.consume_less == 'gpu':
@@ -404,8 +408,10 @@ class NTM(Recurrent):
             self.set_weights(self.initial_weights)
             del self.initial_weights
         self.built = True
+        print("end build(self, input_shape)")
 
     def reset_states(self):
+        print("begin reset_states(self)")
         assert self.stateful, 'Layer must be stateful.'
         input_shape = self.input_spec[0].shape
         self.depth = 0
@@ -418,16 +424,26 @@ class NTM(Recurrent):
             # K.set_value(self.states[1],
             #             np.zeros((input_shape[0], self.output_dim)))
             # add by Robot Steven ****************************************#
+            # previous inner memory
             K.set_value(self.states[0],
                         np.zeros((input_shape[0], self.controller_output_dim)))
+            # previous inner cell
             K.set_value(self.states[1],
                         np.zeros((input_shape[0], self.controller_output_dim)))
+            # previous memory
             K.set_value(self.states[2],
-                        np.zeros((input_shape[0], self.memory_size, self.memory_dim)))
+                        np.zeros((input_shape[0], self.memory_dim, self.memory_size)))
+            # K.set_value(self.states[2],
+            #             np.zeros((input_shape[0], self.memory_size, self.memory_dim)))
+            # previous writing addresses
             K.set_value(self.states[3],
                         np.zeros((input_shape[0], self.num_write_head * self.memory_size)))
+            # K.set_value(self.states[3],
+            #             np.zeros((input_shape[0], self.num_write_head * self.memory_size)))
+            # previous reading addresses
             K.set_value(self.states[4],
                         np.zeros((input_shape[0], self.num_read_head * self.memory_size)))
+            # previous reading content
             K.set_value(self.states[5],
                         np.zeros((input_shape[0], self.num_read_head * self.memory_dim)))
             # add by Robot Steven ****************************************#
@@ -437,13 +453,16 @@ class NTM(Recurrent):
             # add by Robot Steven ****************************************#
             self.states = [K.zeros((input_shape[0], self.controller_output_dim)),  # h_tm1
                            K.zeros((input_shape[0], self.controller_output_dim)),  # c_tm1]
-                           K.zeros((input_shape[0], self.memory_size, self.memory_dim)),
+                           K.zeros((input_shape[0], self.memory_dim, self.memory_size)),
+                           # K.zeros((input_shape[0], self.memory_size, self.memory_dim)),
                            K.zeros((input_shape[0], self.num_write_head * self.memory_size)),
                            K.zeros((input_shape[0], self.num_read_head * self.memory_size)),
                            K.zeros((input_shape[0], self.num_read_head * self.memory_dim))]
             # add by Robot Steven ****************************************#
+        print("end reset_states(self)")
 
     def preprocess_input(self, x):
+        print("begin preprocess_input(self, x)")
         if self.consume_less == 'cpu':
             if 0 < self.dropout_W < 1:
                 dropout = self.dropout_W
@@ -471,14 +490,17 @@ class NTM(Recurrent):
             x_o = time_distributed_dense(x, self.W_o, self.b_o, dropout,
                                          input_dim, self.controller_output_dim, timesteps)
             # add by Robot Steven ****************************************#
+            print("end preprocess_input(self,x )")
             return K.concatenate([x_i, x_f, x_c, x_o], axis=2)
         else:
+            print("end preprocess_input(self,x )")
             return x
 
     def step(self, x, states):
+        print("begin step(self, x, states)")
         h_tm1 = states[0]       # previous inner memory
         c_tm1 = states[1]       # previous inner cell
-        memory_tm1 = states[2]       # previous external memory
+        memory_tm1 = states[2]  # previous external memory
         w_w_tm1 = states[3]     # previous write addressing
         w_r_tm1 = states[4]     # previous read addressing
         r_tm1_list = states[5]  # previous read content list
@@ -569,12 +591,12 @@ class NTM(Recurrent):
         w_w_t = EM.addressing(memory_tm1, self.memory_dim, self.memory_size,
                               w_w_tm1, xi_k_w, xi_beta_w, xi_g_w,
                               xi_s_w, xi_gama_w, self.location_shift_range)
-        print("Memory at time-step t-1")
+        print("\tMemory at time-step t-1")
         print(memory_tm1)
 
         # update the memory
         memory_t = head.writing(memory_tm1, w_w_t, xi_e_w, xi_a_w)
-        print("Memory at time-step t")
+        print("\tMemory at time-step t")
         print(memory_tm1)
 
         # get the addressing for reading
@@ -611,9 +633,11 @@ class NTM(Recurrent):
 
         self.depth += 1
 
+        print("end step(self, x, states)")
         return y, [h, c, memory_t, w_w_t, w_r_t, r_t_list]
 
     def get_constants(self, x):
+        print("begin get_constants(self, x)")
         constants = []
         if 0 < self.dropout_U < 1:
             ones = K.ones_like(K.reshape(x[:, 0, 0], (-1, 1)))
@@ -643,9 +667,11 @@ class NTM(Recurrent):
         # else:
         #     constants.append([K.cast_to_floatx(1.) for _ in range(4)])
 
+        print("end get_constants(self, x)")
         return constants
 
     def get_config(self):
+        print("begin get_config(self)")
         config = {'output_dim': self.output_dim,
                   'memory_dim': self.memory_dim,
                   'memory_size': self.memory_size,
@@ -668,6 +694,7 @@ class NTM(Recurrent):
                   'dropout_W': self.dropout_W,
                   'dropout_U': self.dropout_U}
         base_config = super(NTM, self).get_config()
+        print("end get_config(self)")
         return dict(list(base_config.items()) + list(config.items()))
 
     def get_memory(self, depth=None):

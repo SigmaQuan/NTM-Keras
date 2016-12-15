@@ -19,30 +19,14 @@ import head
 #
 
 
-# def logistic(x):
-#     s = 1 / (1 + K.exp(x))
-#     log = theano.function([x], s)
-#     return log
-#     # return s
-#
-# x = [[0, 1], [-1, -2]]
-# print logistic(x)
+import numpy as np
 
-
-x = T.matrix('x')
-y = T.matrix('y')
-a = T.vector('a')
-b = T.dot(x, y)
-c = T.dot(x, a)
-
-print(x)
-print(y)
-print(a)
-print(b)
-print(c)
-
-print(x.shape)
-print(y)
-print(a)
-print(b)
-print(c)
+u = np.random.random((3))
+V = np.random.random((3, 4))
+similairty = np.dot(u, V) / (sum(abs(u)) * np.sum(abs(V), axis=0))
+print("u")
+print(u)
+print("V")
+print(V)
+print("similairty")
+print(similairty)
