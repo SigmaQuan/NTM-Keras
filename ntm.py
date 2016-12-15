@@ -597,7 +597,7 @@ class NTM(Recurrent):
         # update the memory
         memory_t = head.writing(memory_tm1, w_w_t, xi_e_w, xi_a_w)
         print("\tMemory at time-step t")
-        print(memory_tm1)
+        print(memory_t)
 
         # get the addressing for reading
         w_r_t = EM.addressing(memory_t, self.memory_dim, self.memory_size,
