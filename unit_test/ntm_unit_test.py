@@ -23,6 +23,8 @@ from util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
 import ntm                                   # Add by Steven Robot
 # import lstm2ntm                              # Add by Steven Robot
+from keras.layers import Input, Dense
+from keras.models import Model
 
 
 # Parameters for the model to train copying algorithm
@@ -86,13 +88,11 @@ for i in range(3):
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Build model...')
-model = Sequential()
-# "Encode" the input sequence using an RNN, producing an output of HIDDEN_SIZE
-# note: in a situation where your input sequences have a variable length,
-# use input_shape=(None, nb_feature).
-model.add(RNN(
-    input_shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE+2),
-    # output_dim=INPUT_DIMENSION_SIZE+2,
+
+print('Input sequence...')
+input_sequence = Input(shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE), name="input_sequence")
+print('NTM...')
+ntm_out = RNN(
     output_dim=MEMORY_DIM,
     memory_dim=MEMORY_DIM,
     memory_size=MEMORY_SIZE,
@@ -111,21 +111,57 @@ model.add(RNN(
     R_regularizer=None,
     b_regularizer=None,
     dropout_W=0.0,
-    dropout_U=0.0))
+    dropout_U=0.0)(input_sequence)
+print('Output sequence...')
+output_sequence = Dense(
+    output_dim=INPUT_DIMENSION_SIZE+2,
+    activation='sigmoid',
+    name='output_sequence')(ntm_out)
+print('Model...')
+model = Model(input=input_sequence, output=output_sequence)
 
+#
+# model = Sequential()
+# # "Encode" the input sequence using an RNN, producing an output of HIDDEN_SIZE
+# # note: in a situation where your input sequences have a variable length,
+# # use input_shape=(None, nb_feature).
+# model.add(RNN(
+#     input_shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE+2),
+#     # output_dim=INPUT_DIMENSION_SIZE+2,
+#     output_dim=MEMORY_DIM,
+#     memory_dim=MEMORY_DIM,
+#     memory_size=MEMORY_SIZE,
+#     controller_output_dim=CONTROLLER_OUTPUT_DIM,
+#     location_shift_range=LOCATION_SHIFT_RANGE,
+#     num_read_head=NUM_READ_HEAD,
+#     num_write_head=NUM_WRITE_HEAD,
+#     init='glorot_uniform',
+#     inner_init='orthogonal',
+#     return_sequences=True,
+#     # activation='hard_sigmoid',
+#     activation='tanh',
+#     # activation='sigmoid',
+#     W_regularizer=None,
+#     U_regularizer=None,
+#     R_regularizer=None,
+#     b_regularizer=None,
+#     dropout_W=0.0,
+#     dropout_U=0.0))
+#
+#
+# # # For the decoder's input, we repeat the encoded input for each time step
+# # # model.add(RepeatVector(MAX_INPUT_LENGTH))
+# # # The decoder RNN could be multiple layers stacked or a single layer
+# # for _ in range(LAYERS):
+# #     model.add(RNN(HIDDEN_SIZE, return_sequences=True))
+#
+# # For each of step of the output sequence, decide which character should be chosen
+# model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
+# # model.add(Activation('softmax'))
+# # model.add(Activation('hard_sigmoid'))
+# model.add(Activation('sigmoid'))
 
-# # For the decoder's input, we repeat the encoded input for each time step
-# # model.add(RepeatVector(MAX_INPUT_LENGTH))
-# # The decoder RNN could be multiple layers stacked or a single layer
-# for _ in range(LAYERS):
-#     model.add(RNN(HIDDEN_SIZE, return_sequences=True))
-
-# For each of step of the output sequence, decide which character should be chosen
-model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
-# model.add(Activation('softmax'))
-# model.add(Activation('hard_sigmoid'))
-model.add(Activation('sigmoid'))
-
+print('Compile...')
 model.compile(loss='binary_crossentropy',
               # loss='mse',
               optimizer='adam',

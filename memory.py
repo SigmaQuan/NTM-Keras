@@ -111,29 +111,31 @@ def addressing(
     :param scalar_t: scalar at time t.
     :return: a weight vector at time t.
     """
+    print("\tbegin addressing()")
     # Content addressing
     weight_content_t = content_addressing(
         memory_t, key_vector_t, key_strength_t)
-    print("weight_content_t")
+    # print("weight_content_t")
     # print(weight_content_t)
 
     # Interpolation
     weight_gated_t = interpolation(
         weight_t_1, weight_content_t, interpolation_gate_t)
-    print("weight_gated_t")
+    # print("weight_gated_t")
     # print(weight_gated_t)
 
     # Convolutional Shift
     _weight_t = circular_convolutional_shift(
         weight_gated_t, shift_weight_t, memory_size, shift_range)
-    print("_weight_t")
+    # print("_weight_t")
     # print(_weight_t)
 
     # Sharpening
     weight_t = sharpen(_weight_t, scalar_t)
-    print("weight_t")
+    # print("weight_t")
     # print(weight_t)
 
+    print("\tend addressing()")
     return weight_t
 
 
