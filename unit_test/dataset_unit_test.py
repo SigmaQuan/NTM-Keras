@@ -21,10 +21,27 @@ def test_copy_data_generation():
     print output_sequence
 
 
+def show_repeat_copy_data_generation():
+    print('Generating data...')
+    input_sequence, output_sequence, repeat_times = \
+        dataset.generate_repeat_copy_data_set(7, 10, 100, 10)
+    print(output_sequence[0].transpose().shape)
+
+    for i in range(100):
+        visualization.show_repeat_copy_data(
+            output_sequence[i].transpose(),
+            input_sequence[i].transpose(),
+            "Output sequence $y^{(t)}$",
+            "Input sequence $x^{(t)}$",
+            "../experiment/repeat_copy_data_predict_%2d.pdf"%i,
+            repeat_times[i]
+        )
+
+
 def test_repeat_copy_data_generation():
     print('Generating data...')
     input_sequence, output_sequence, repeat_times = \
-        dataset.generate_repeat_copy_data_set(4, 10, 20, 5)
+        dataset.generate_repeat_copy_data_set(4, 10, 20, 20)
 
     print(input_sequence.shape)
     matrix_list = []
@@ -47,42 +64,34 @@ def test_repeat_copy_data_generation():
 
 
 def test_associative_recall_data():
-    input_size = 6
-    item_size = 3
-    episode_size = 2
-    max_episode_size = 6
+    INPUT_DIMENSION_SIZE = 6
+    ITEM_SIZE = 4
+    MAX_EPISODE_SIZE = 20
+    TRAINING_SIZE = 100
+    MAX_INPUT_LENGTH = (ITEM_SIZE+1) * (MAX_EPISODE_SIZE+2)
+    print(MAX_INPUT_LENGTH)
     # item = dataset.generate_associative_recall_items(input_size, item_size, episode_size)
     # print(item)
-    #
-    #
-    # input_sequence, output_sequence = dataset.generate_associative_recall_data(
-    #     input_size, item_size, episode_size, max_episode_size)
+
+    print('Generating data sets...')
+    input_sequence, output_sequence = dataset.generate_associative_recall_data_set(
+        INPUT_DIMENSION_SIZE, ITEM_SIZE, MAX_EPISODE_SIZE, TRAINING_SIZE)
     # print input_sequence
     # print output_sequence
 
-    training_size = 10
-    train_X, train_Y = dataset.generate_repeat_copy_data_set(
-        input_size, item_size, max_episode_size, training_size)
+    print(input_sequence.shape)
+    print(output_sequence.shape)
 
-    print(train_X.shape)
-    print(train_Y.shape)
-    matrix_list = []
-    matrix_list.append(train_X[0].transpose())
-    matrix_list.append(train_Y[0].transpose())
-    matrix_list.append(train_Y[0].transpose())
-    name_list = []
-    name_list.append("Input")
-    name_list.append("Target")
-    name_list.append("Predict")
-    show_matrix = visualization.PlotDynamicalMatrix(matrix_list, name_list)
-
-    for i in range(training_size):
-        matrix_list_update = []
-        matrix_list_update.append(train_X[i].transpose())
-        matrix_list_update.append(train_Y[i].transpose())
-        matrix_list_update.append(train_Y[i].transpose())
-        show_matrix.update(matrix_list_update, name_list)
-        show_matrix.save("../experiment/associative_recall_data_training_%2d.png"%i)
+    for i in range(TRAINING_SIZE):
+        # print(output_sequence[i].transpose())
+        # print(input_sequence[i].transpose())
+        visualization.show_associative_recall_data(
+            output_sequence[i].transpose(),
+            input_sequence[i].transpose(),
+            "Output sequence $y^{(t)}$",
+            "Input sequence $x^{(t)}$",
+            "../experiment/associative_recall_%2d.pdf"%i
+        )
 
 
 def test_n_gram_data():
@@ -150,7 +159,8 @@ def test_priority_sort_data():
 
 if __name__ == "__main__":
     # test_copy_data_generation()
+    show_repeat_copy_data_generation()
     # test_repeat_copy_data_generation()
     # test_associative_recall_data()
-    test_n_gram_data()
+    # test_n_gram_data()
     # test_priority_sort_data()

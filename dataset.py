@@ -98,7 +98,7 @@ def generate_repeat_copy_data(input_size, sequence_length, repeat_times):
     output_sequence[sequence_length+1:, :-1] = \
         np.tile(sequence, (repeat_times, 1))
     # "1": A special flag which indicate the begin of the output
-    output_sequence[sequence_length, -1] = 1
+    # output_sequence[sequence_length, -1] = 1
 
     return input_sequence, output_sequence
 
@@ -306,9 +306,9 @@ def generate_associative_priority_sort_data(
     for i in range(output_sequence_length):
         output_sequence[i] = sorted_input_sequence[i][0]
 
-    input_sequence_ = np.zeros((sequence, input_size+2), dtype=np.uint8)
+    input_sequence_ = np.zeros((sequence, input_size+2), dtype=np.float32)
     input_priority_ = np.zeros((sequence, 1), dtype=np.float32)
-    output_sequence_ = np.zeros((sequence, input_size+2), dtype=np.uint8)
+    output_sequence_ = np.zeros((sequence, input_size+2), dtype=np.float32)
     output_priority_ = np.zeros((sequence, 1), dtype=np.float32)
 
     input_sequence_[:input_sequence_length, :-1] = input_sequence
