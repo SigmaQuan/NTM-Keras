@@ -73,11 +73,7 @@ def show_repeat_copy_data(
     plt.text(-2, -5, input_name, ha='right')
     plt.text(9, 12, '$t$ $\longrightarrow$', ha='right')
 
-    # # set tick labels invisible
-    # make_tick_labels_invisible(plt.gcf())
-    # # adjust spaces
-    # plt.subplots_adjust(hspace=0.05, wspace=0.05, bottom=0.1, right=0.8, top=0.9)
-    # # add color bars
+    # add color bars
     # # *rect* = [left, bottom, width, height]
     cax = plt.axes([0.84, 0.1, 0.005, 0.71])
     plt.colorbar(cax=cax)
@@ -86,9 +82,6 @@ def show_repeat_copy_data(
     plt.show()
 
     # save image
-    # pp = PdfPages(image_file)
-    # plt.savefig(pp, format='pdf')
-    # pp.close()
     fig.savefig(image_file, dpi=75, format='pdf')
 
     # close plot GUI
