@@ -65,7 +65,8 @@ def test_repeat_copy_data_generation():
 
 def test_associative_recall_data():
     INPUT_DIMENSION_SIZE = 6
-    ITEM_SIZE = 4
+    # ITEM_SIZE = 4
+    ITEM_SIZE = 3
     MAX_EPISODE_SIZE = 20
     TRAINING_SIZE = 100
     MAX_INPUT_LENGTH = (ITEM_SIZE+1) * (MAX_EPISODE_SIZE+2)
@@ -159,8 +160,8 @@ def test_priority_sort_data():
 
 if __name__ == "__main__":
     # test_copy_data_generation()
-    show_repeat_copy_data_generation()
+    # show_repeat_copy_data_generation()
     # test_repeat_copy_data_generation()
-    # test_associative_recall_data()
+    test_associative_recall_data()
     # test_n_gram_data()
     # test_priority_sort_data()

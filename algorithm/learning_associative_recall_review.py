@@ -21,10 +21,12 @@ from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
+from keras.optimizers import Adam            # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
-TRAINING_SIZE = 1024000
+# TRAINING_SIZE = 1024000
+TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
 INPUT_DIMENSION_SIZE = 6
@@ -108,9 +110,16 @@ model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
 # model.add(Activation('hard_sigmoid'))
 model.add(Activation('sigmoid'))
 
+lr = 0.0001
+beta_1 = 0.9
+beta_2 = 0.999
+epsilon = 1e-8
+ADAM_ = Adam(lr=lr, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon)
+
 model.compile(loss='binary_crossentropy',
               # loss='mse',
-              optimizer='adam',
+              # optimizer='adam',
+              optimizer=ADAM_,
               metrics=['accuracy'])
 
 print()
