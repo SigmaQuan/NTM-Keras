@@ -139,8 +139,8 @@ for iteration in range(1, 200):
     model.fit(train_X,
               train_Y,
               batch_size=BATCH_SIZE,
-              nb_epoch=30,
-              # nb_epoch=1,
+              # nb_epoch=30,
+              nb_epoch=1,
               callbacks=[check_pointer, history],
               validation_data=(valid_X, valid_Y))
     print(len(history.losses))
