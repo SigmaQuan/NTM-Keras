@@ -32,6 +32,7 @@ ITEM_SIZE = 3
 MAX_EPISODE_SIZE = 6
 MAX_INPUT_LENGTH = (ITEM_SIZE+1) * (MAX_EPISODE_SIZE+2)
 
+
 # Try replacing SimpleRNN, GRU, or LSTM
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
