@@ -39,8 +39,8 @@ RNN = recurrent.LSTM
 HIDDEN_SIZE = 256
 LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
-# BATCH_SIZE = 1024
-BATCH_SIZE = 128
+BATCH_SIZE = 1024
+# BATCH_SIZE = 128
 FOLDER = "experiment_results/associative_recall_ntm/"
 if not os.path.isdir(FOLDER):
     os.makedirs(FOLDER)
