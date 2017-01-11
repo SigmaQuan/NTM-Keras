@@ -45,19 +45,18 @@ LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
 BATCH_SIZE = 1024
 # BATCH_SIZE = 128
-FOLDER = "experiment_results/associative_recall_ntm/"
+
+folder_name = time.strftime('experiment_results/recall_lstm/%Y-%m-%d-%H-%M-%S/')
+# os.makedirs(folder_name)
+FOLDER = folder_name
 if not os.path.isdir(FOLDER):
     os.makedirs(FOLDER)
     print("create folder: %s" % FOLDER)
-
-folder_name = time.strftime('experiment/%Y-%m-%d-%H-%M-%S')
-os.makedirs(folder_name)
 
 start_time = time.time()
 sys_stdout = sys.stdout
 log_file = '%s/recall.log' % (folder_name)
 sys.stdout = open(log_file, 'a')
-
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -146,7 +145,9 @@ print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Training...")
 # Train the model each generation and show predictions against the
 # validation dataset
-for iteration in range(1, 20):
+losses = []
+acces = []
+for iteration in range(1, 3):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -162,10 +163,12 @@ for iteration in range(1, 20):
               nb_epoch=1,
               callbacks=[check_pointer, history],
               validation_data=(valid_X, valid_Y))
-    print(len(history.losses))
-    print(history.losses)
-    print(len(history.acces))
-    print(history.acces)
+    # print(len(history.losses))
+    # print(history.losses)
+    # print(len(history.acces))
+    # print(history.acces)
+    losses.append(history.losses)
+    acces.append(history.acces)
 
     ###
     # Select 20 samples from the validation set at random so we can
@@ -184,6 +187,22 @@ for iteration in range(1, 20):
         show_matrix.save(FOLDER+"associative_data_predict_%3d.png"%iteration)
 
 show_matrix.close()
+print("losses")
+print(len(losses))
+print(len(losses[0]))
+# print(losses.shape)
+for los in losses:
+    for lo in los:
+        print(lo)
+# print(losses)
+print("access")
+print(len(acces))
+print(len(acces[0]))
+# print(acces.shape)
+for acc in acces:
+    for ac in acc:
+        print(ac)
+# print(acces)
 
 print ("task took %.3fs" % (float(time.time()) - start_time))
 sys.stdout.close()
