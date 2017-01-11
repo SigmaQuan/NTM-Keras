@@ -26,8 +26,8 @@ import sys
 
 
 # Parameters for the model to train copying algorithm
-# TRAINING_SIZE = 1024000
-TRAINING_SIZE = 10240
+TRAINING_SIZE = 1024000
+# TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
 INPUT_DIMENSION_SIZE = 6
@@ -147,7 +147,7 @@ print("Training...")
 # validation dataset
 losses = []
 acces = []
-for iteration in range(1, 3):
+for iteration in range(1, 4):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -194,7 +194,8 @@ print(len(losses[0]))
 sample_num = 1
 for los in losses:
     for lo in los:
-        print("(%d, %f)" % (sample_num, lo))
+        if sample_num % 100 == 1:
+            print("(%d, %f)" % (sample_num, lo))
         sample_num = sample_num + 1
 # print(losses)
 
@@ -205,7 +206,8 @@ print(len(acces[0]))
 sample_num = 1
 for acc in acces:
     for ac in acc:
-        print("(%d, %f)" % (sample_num, ac))
+        if sample_num % 100 == 1:
+            print("(%d, %f)" % (sample_num, ac))
         sample_num = sample_num + 1
 # print(acces)
 
