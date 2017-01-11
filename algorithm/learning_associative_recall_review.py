@@ -22,6 +22,7 @@ from keras.callbacks import Callback         # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
 from keras.optimizers import Adam            # Add by Steven Robot
+import sys
 
 
 # Parameters for the model to train copying algorithm
@@ -48,6 +49,15 @@ FOLDER = "experiment_results/associative_recall_ntm/"
 if not os.path.isdir(FOLDER):
     os.makedirs(FOLDER)
     print("create folder: %s" % FOLDER)
+
+folder_name = time.strftime('experiment/%Y-%m-%d-%H-%M-%S')
+os.makedirs(folder_name)
+
+start_time = time.time()
+sys_stdout = sys.stdout
+log_file = '%s/recall.log' % (folder_name)
+sys.stdout = open(log_file, 'a')
+
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -136,7 +146,7 @@ print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Training...")
 # Train the model each generation and show predictions against the
 # validation dataset
-for iteration in range(1, 200):
+for iteration in range(1, 20):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -174,3 +184,7 @@ for iteration in range(1, 200):
         show_matrix.save(FOLDER+"associative_data_predict_%3d.png"%iteration)
 
 show_matrix.close()
+
+print ("task took %.3fs" % (float(time.time()) - start_time))
+sys.stdout.close()
+sys.stdout = sys_stdout
