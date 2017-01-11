@@ -29,12 +29,12 @@ import sys                                   # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
-# TRAINING_SIZE = 1024000
-TRAINING_SIZE = 10240
+TRAINING_SIZE = 3*1024000
+# TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
 # INPUT_DIMENSION_SIZE = 4 + 1
-INPUT_DIMENSION_SIZE = 8 + 1
+INPUT_DIMENSION_SIZE = 7 + 1
 MAX_COPY_LENGTH = 10
 # REPEAT_TIMES = 2
 # MAX_INPUT_LENGTH = MAX_COPY_LENGTH + 1 + REPEAT_TIMES * MAX_COPY_LENGTH + 1
@@ -50,7 +50,8 @@ RNN = recurrent.LSTM
 HIDDEN_SIZE = 128*4
 LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
-BATCH_SIZE = 1024
+# BATCH_SIZE = 1024
+BATCH_SIZE = 128
 # BATCH_SIZE = 128
 
 
@@ -171,7 +172,7 @@ print("Training...")
 # validation dataset
 losses = []
 acces = []
-for iteration in range(1, 4):
+for iteration in range(1, 2):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))

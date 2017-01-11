@@ -26,7 +26,7 @@ import sys                                   # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
-TRAINING_SIZE = 1024000
+TRAINING_SIZE = 3*1024000
 # TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
@@ -147,7 +147,7 @@ print("Training...")
 # validation dataset
 losses = []
 acces = []
-for iteration in range(1, 4):
+for iteration in range(1, 2):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
