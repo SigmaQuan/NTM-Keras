@@ -187,21 +187,26 @@ for iteration in range(1, 3):
         show_matrix.save(FOLDER+"associative_data_predict_%3d.png"%iteration)
 
 show_matrix.close()
-print("losses")
+print("\nlosses")
 print(len(losses))
 print(len(losses[0]))
 # print(losses.shape)
+sample_num = 1
 for los in losses:
     for lo in los:
-        print(lo)
+        print("(%d, %f)" % (sample_num, lo))
+        sample_num = sample_num + 1
 # print(losses)
-print("access")
+
+print("\naccess")
 print(len(acces))
 print(len(acces[0]))
 # print(acces.shape)
+sample_num = 1
 for acc in acces:
     for ac in acc:
-        print(ac)
+        print("(%d, %f)" % (sample_num, ac))
+        sample_num = sample_num + 1
 # print(acces)
 
 print ("task took %.3fs" % (float(time.time()) - start_time))
