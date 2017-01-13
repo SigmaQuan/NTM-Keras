@@ -9,20 +9,20 @@ Output dimension: equal to input dimension.
 from __future__ import print_function
 from keras.models import Sequential
 # from keras.engine.training import slice_X
-from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent
+from keras.layers import Activation, TimeDistributed, Dense, recurrent
+# from keras.layers import RepeatVector
 import numpy as np
 # from six.moves import range
 import dataset  # Add by Steven Robot
 import visualization  # Add by Steven
-from keras.utils.visualize_util import plot  # Add by Steven
+from keras.utils.visualize_util import plot  # Add by Steven Robot
 import time                                  # Add by Steven Robot
 from keras.layers import Merge               # Add by Steven Robot
-from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
+from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
-import os
+import os                                    # Add by Steven Robot
 import sys                                   # Add by Steven Robot
-
 
 
 # Parameters for the model to train copying algorithm
@@ -53,7 +53,6 @@ LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
 # BATCH_SIZE = 1024
 BATCH_SIZE = 16
-
 
 
 folder_name = time.strftime('experiment_results/sort_lstm/%Y-%m-%d-%H-%M-%S/')
