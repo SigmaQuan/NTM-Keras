@@ -27,9 +27,9 @@ import sys                                   # Add by Steven Robot
 
 # Parameters for the model to train copying algorithm
 # EXAMPLE_SIZE = 2560000
-# EXAMPLE_SIZE = 1024000
+EXAMPLE_SIZE = 1024000
 # EXAMPLE_SIZE = 128000
-EXAMPLE_SIZE = 1280
+# EXAMPLE_SIZE = 1280
 INPUT_DIMENSION_SIZE = 8
 # INPUT_DIMENSION_SIZE = 4
 INPUT_SEQUENCE_LENGTH = 20
@@ -51,8 +51,8 @@ HIDDEN_SIZE = 128*1   #    220554 parameters
 # HIDDEN_SIZE = 64       #     57034 parameters
 LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
-# BATCH_SIZE = 1024
-BATCH_SIZE = 16
+BATCH_SIZE = 1024
+# BATCH_SIZE = 16
 
 
 folder_name = time.strftime('experiment_results/sort_lstm/%Y-%m-%d-%H-%M-%S/')
@@ -179,7 +179,7 @@ print("Training...")
 # validation dataset
 losses = []
 acces = []
-for iteration in range(1, 200):
+for iteration in range(1, 3):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -191,7 +191,7 @@ for iteration in range(1, 200):
     model.fit([train_x_seq],
               train_y_seq,
               batch_size=BATCH_SIZE,
-              nb_epoch=10,
+              nb_epoch=1,
               callbacks=[check_pointer, history],
               validation_data=([validation_x_seq], validation_y_seq))
     # print(len(history.losses))
@@ -217,7 +217,7 @@ for iteration in range(1, 200):
         show_matrix.update(input_matrix[0].transpose(),
                            output_matrix[0].transpose(),
                            predict_matrix[0].transpose())
-        show_matrix.save(FOLDER+"priority_data_training_%2d_%2d.png" % (iteration, i))
+        show_matrix.save(FOLDER+"priority_data_predict_%2d_%2d.png" % (iteration, i))
 
 show_matrix.close()
 

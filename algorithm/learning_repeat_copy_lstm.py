@@ -173,7 +173,7 @@ print("Training...")
 # validation dataset
 losses = []
 acces = []
-for iteration in range(1, 2):
+for iteration in range(1, 3):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -212,7 +212,7 @@ for iteration in range(1, 2):
         show_matrix.update(matrix_list_update,
                            name_list,
                            valid_repeats_times[ind] * (MAX_REPEAT_TIMES - 1.0) + 1)
-        show_matrix.save(FOLDER+"repeat_copy_data_predict_%3d.png" % iteration)
+        show_matrix.save(FOLDER+"repeat_copy_data_predict_%2d_%2d.png" % (iteration, i))
 
 show_matrix.close()
 
