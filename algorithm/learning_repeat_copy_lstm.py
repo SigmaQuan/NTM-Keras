@@ -29,7 +29,7 @@ import sys                                   # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm
-TRAINING_SIZE = 3*1024000
+TRAINING_SIZE = 1024000
 # TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
