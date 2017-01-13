@@ -1,40 +1,115 @@
 import struct
 
+#
+# id_i = 0
+# value_i = 0.0
+# id_i_1 = 0
+# value_i_1 = 1.0
+# number = 0
+# with open("sort.dat", "r") as f:
+#     for line in f:
+#         line = line.replace('(', '')
+#         line = line.replace(')', '')
+#         line = line.replace(' ', '')
+#         line = line.replace('\n', '')
+#         # print line
+#         id_value = line.split(',')
+#
+#         if len(id_value) < 2:
+#             continue
+#         # print id_value
+#
+#         id = int(id_value[0])
+#         id = id*128/1024
+#         value = float(id_value[1])
+#         # print(id)
+#         # print(value)
+#
+#         if (id_i == id):
+#             value_i = value_i + value
+#             number = number + 1
+#         elif (id < 2000):
+#
+#             if (value_i/number < (value_i_1 - 0.009) and id_i < 100) or ((id_i > (id_i_1 + 20)) and id_i > 100) :
+#                 print '({0}, {1})'.format(id_i_1+1, value_i_1)
+#                 id_i_1 = id_i
+#                 value_i_1 = value_i/number
+#
+#             id_i = id
+#             value_i = value
+#             number = 1
+#
+#
+#
+# id_i = 0
+# value_i = 0.0
+# id_i_1 = 0
+# value_i_1 = 1.0
+# number = 0
+# with open("recall.dat", "r") as f:
+#     for line in f:
+#         line = line.replace('(', '')
+#         line = line.replace(')', '')
+#         line = line.replace(' ', '')
+#         line = line.replace('\n', '')
+#         # print line
+#         id_value = line.split(',')
+#
+#         if len(id_value) < 2:
+#             continue
+#         # print id_value
+#
+#         id = int(id_value[0])
+#         # id = id*128/1024
+#         value = float(id_value[1])
+#         # print(id)
+#         # print(value)
+#
+#         id_i = id
+#         value_i = value
+#
+#         if (value_i < (value_i_1 - 0.03) and id_i < 100) or ((id_i > (id_i_1 + 40)) and id_i > 100):
+#             print '({0}, {1})'.format(id_i_1, value_i_1)
+#             id_i_1 = id_i
+#             value_i_1 = value_i
+#
+#
+
 
 id_i = 0
 value_i = 0.0
 id_i_1 = 0
 value_i_1 = 1.0
 number = 0
-with open("sort.dat", "r") as f:
+with open("copy.dat", "r") as f:
     for line in f:
         line = line.replace('(', '')
         line = line.replace(')', '')
         line = line.replace(' ', '')
         line = line.replace('\n', '')
         # print line
-        [id, value] = line.split(',')
-        id = int(id)
+        id_value = line.split(',')
+
+        if len(id_value) < 2:
+            continue
+        # print id_value
+
+        id = int(id_value[0])
         id = id*128/1024
-        value = float(value)
+        value = float(id_value[1])
         # print(id)
         # print(value)
 
         if (id_i == id):
             value_i = value_i + value
             number = number + 1
-        else:
-            if (id_i > id_i_1 + 300 or value_i < value_i_1 - 0.09):
-                print '({0}, {1})'.format(id, value_i/number)
-            id_i_1 = id_i
-            value_i_1 = value_i/number
+        elif (id < 2000):
+
+            if (value_i/number < (value_i_1 - 0.009) and id_i < 100) or ((id_i > (id_i_1 + 20)) and id_i > 100) :
+                print '({0}, {1})'.format(id_i_1+1, value_i_1)
+                id_i_1 = id_i
+                value_i_1 = value_i/number
+
             id_i = id
             value_i = value
             number = 1
-
-    print '({0}, {1})'.format(id_i, value_i/number)
-
-
-
-# for line in open("sort.dat").readlines():
-#     print line
