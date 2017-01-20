@@ -2,6 +2,7 @@ import learning_repeat_copy_lstm
 import learning_associative_recall_lstm
 import learning_priority_sort_lstm
 
+
 def copy():
     learning_repeat_copy_lstm
 
