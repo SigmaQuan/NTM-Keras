@@ -1,30 +1,33 @@
 # -*- coding: utf-8 -*-
-'''An implementation of learning copying algorithm with RNN (basic RNN, LSTM,
-GRU).
-Input sequence length: "1 ~ 20: (1*2+1)=3 ~ (20*2+1)=41"
-Input dimension: "8"
-Output sequence length: equal to input sequence length.
+"""An implementation of learning associative recall algorithm_learning with LSTM.
+Input sequence length: "2 ~ 6 items: (2*(3+1) ~ 6*(3+1))."
+Input dimension: "6+2", Item 3*6 bits
+Output sequence length: "3" one item .
 Output dimension: equal to input dimension.
-'''
+"""
 
 from __future__ import print_function
 from keras.models import Sequential
-# from keras.engine.training import slice_X
-from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent
+from keras.layers import Activation, TimeDistributed, Dense, recurrent
 import numpy as np
 # from six.moves import range
-import dataset                               # Add by Steven Robot
-import visualization                         # Add by Steven Robot
-from keras.utils.visualize_util import plot  # Add by Steven Robot
-import time                                  # Add by Steven Robot
+# from keras.layers import RepeatVector
+# from keras.engine.training import slice_X
+# from keras.callbacks import Callback       # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
-from keras.callbacks import Callback         # Add by Steven Robot
-from algorithm.util import LossHistory                 # Add by Steven Robot
+from keras.utils.visualize_util import plot  # Add by Steven Robot
+from keras.optimizers import Adam            # Add by Steven Robot
+from util import LossHistory                 # Add by Steven Robot
+import visualization                         # Add by Steven Robot
+import dataset                               # Add by Steven Robot
+import time                                  # Add by Steven Robot
 import os                                    # Add by Steven Robot
+import sys                                   # Add by Steven Robot
 
 
-# Parameters for the model to train copying algorithm
+# Parameters for the model to train copying algorithm_learning
 TRAINING_SIZE = 1024000
+# TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
 INPUT_DIMENSION_SIZE = 6
@@ -32,18 +35,28 @@ ITEM_SIZE = 3
 MAX_EPISODE_SIZE = 6
 MAX_INPUT_LENGTH = (ITEM_SIZE+1) * (MAX_EPISODE_SIZE+2)
 
+
 # Try replacing SimpleRNN, GRU, or LSTM
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
 RNN = recurrent.LSTM
-HIDDEN_SIZE = 128*4
-LAYERS = 1
+HIDDEN_SIZE = 256
+LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
 BATCH_SIZE = 1024
-FOLDER = "experiment_results/associative_recall/"
+# BATCH_SIZE = 128
+
+folder_name = time.strftime('experiment_results/recall_lstm/%Y-%m-%d-%H-%M-%S/')
+# os.makedirs(folder_name)
+FOLDER = folder_name
 if not os.path.isdir(FOLDER):
     os.makedirs(FOLDER)
     print("create folder: %s" % FOLDER)
+
+start_time = time.time()
+sys_stdout = sys.stdout
+log_file = '%s/recall.log' % (folder_name)
+sys.stdout = open(log_file, 'a')
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -78,23 +91,23 @@ model = Sequential()
 # "Encode" the input sequence using an RNN, producing an output of HIDDEN_SIZE
 # note: in a situation where your input sequences have a variable length,
 # use input_shape=(None, nb_feature).
-hidden_layer = RNN(
+model.add(RNN(
     HIDDEN_SIZE,
     input_shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE+2),
     init='glorot_uniform',
     inner_init='orthogonal',
     activation='tanh',
+    return_sequences=True,
     # activation='hard_sigmoid',
     # activation='sigmoid',
     W_regularizer=None,
     U_regularizer=None,
     b_regularizer=None,
     dropout_W=0.0,
-    dropout_U=0.0)
-model.add(hidden_layer)
+    dropout_U=0.0))
 
 # For the decoder's input, we repeat the encoded input for each time step
-model.add(RepeatVector(MAX_INPUT_LENGTH))
+# model.add(RepeatVector(MAX_INPUT_LENGTH))
 # The decoder RNN could be multiple layers stacked or a single layer
 for _ in range(LAYERS):
     model.add(RNN(HIDDEN_SIZE, return_sequences=True))
@@ -105,11 +118,21 @@ model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
 # model.add(Activation('hard_sigmoid'))
 model.add(Activation('sigmoid'))
 
+# initialize the optimizer
+lr = 0.0001
+beta_1 = 0.9
+beta_2 = 0.999
+epsilon = 1e-8
+ADAM_ = Adam(lr=lr, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon)
+
+# compile the model
 model.compile(loss='binary_crossentropy',
               # loss='mse',
-              optimizer='adam',
+              # optimizer='adam',
+              optimizer=ADAM_,
               metrics=['accuracy'])
 
+# show the information of the model
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Model architecture")
@@ -119,12 +142,15 @@ print(model.summary())
 print("Model parameter count")
 print(model.count_params())
 
+# begain training
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Training...")
 # Train the model each generation and show predictions against the
 # validation dataset
-for iteration in range(1, 200):
+losses = []
+acces = []
+for iteration in range(1, 3):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -136,14 +162,16 @@ for iteration in range(1, 200):
     model.fit(train_X,
               train_Y,
               batch_size=BATCH_SIZE,
-              nb_epoch=30,
-              # nb_epoch=1,
+              # nb_epoch=30,
+              nb_epoch=1,
               callbacks=[check_pointer, history],
               validation_data=(valid_X, valid_Y))
-    print(len(history.losses))
-    print(history.losses)
-    print(len(history.acces))
-    print(history.acces)
+    # print(len(history.losses))
+    # print(history.losses)
+    # print(len(history.acces))
+    # print(history.acces)
+    losses.append(history.losses)
+    acces.append(history.acces)
 
     ###
     # Select 20 samples from the validation set at random so we can
@@ -159,7 +187,61 @@ for iteration in range(1, 200):
         matrix_list_update.append(predicts[0].transpose())
         show_matrix.update(matrix_list_update,
                            name_list)
-        show_matrix.save(FOLDER+"associative_data_predict_%3d.png"%iteration)
+        show_matrix.save(FOLDER+"associative_data_predict_%2d_%2d.png" % (iteration, i))
 
 show_matrix.close()
+# end of training
 
+# print loss and accuracy
+print("\nlosses")
+print(len(losses))
+print(len(losses[0]))
+# print(losses.shape)
+sample_num = 1
+for los in losses:
+    for lo in los:
+        if sample_num % 100 == 1:
+            print("(%d, %f)" % (sample_num, lo))
+        sample_num = sample_num + 1
+# print(losses)
+
+print("********************************************")
+print("\naccess")
+print(len(acces))
+print(len(acces[0]))
+# print(acces.shape)
+sample_num = 1
+for acc in acces:
+    for ac in acc:
+        if sample_num % 100 == 1:
+            print("(%d, %f)" % (sample_num, ac))
+        sample_num = sample_num + 1
+# print(acces)
+
+# print loss and accuracy
+print("\nlosses")
+print(len(losses))
+print(len(losses[0]))
+# print(losses.shape)
+sample_num = 1
+for los in losses:
+    for lo in los:
+        print("(%d, %f)" % (sample_num, lo))
+        sample_num = sample_num + 1
+# print(losses)
+
+print("********************************************")
+print("\naccess")
+print(len(acces))
+print(len(acces[0]))
+# print(acces.shape)
+sample_num = 1
+for acc in acces:
+    for ac in acc:
+        print("(%d, %f)" % (sample_num, ac))
+        sample_num = sample_num + 1
+# print(acces)
+
+print ("task took %.3fs" % (float(time.time()) - start_time))
+sys.stdout.close()
+sys.stdout = sys_stdout

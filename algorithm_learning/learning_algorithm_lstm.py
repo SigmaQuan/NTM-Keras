@@ -3,7 +3,7 @@ Run three algorithm learning tasks: "repeat copy", "associative recall" and
 "priority sort" one by one.
 """
 
-print("Learning algorithm begin:")
+print("Learning algorithm_learning begin:")
 print("copy:")
 import learning_repeat_copy_lstm
 
@@ -12,7 +12,7 @@ import learning_associative_recall_lstm
 
 print("sort:")
 import learning_priority_sort_lstm
-print("Learning algorithm end.")
+print("Learning algorithm_learning end.")
 
 #
 # def copy():

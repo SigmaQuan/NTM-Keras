@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""An implementation of learning copying algorithm with RNN (basic RNN, LSTM,
+"""An implementation of learning copying algorithm_learning with RNN (basic RNN, LSTM,
 GRU).
 Input sequence length: "1 ~ 20: (1*2+1)=3 ~ (20*2+1)=41"
 Input dimension: "4"
@@ -28,7 +28,7 @@ import sys                                   # Add by Steven Robot
 
 
 
-# Parameters for the model to train copying algorithm
+# Parameters for the model to train copying algorithm_learning
 TRAINING_SIZE = 1024000
 # TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000

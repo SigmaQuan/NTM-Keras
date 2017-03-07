@@ -19,45 +19,44 @@ from keras.utils.visualize_util import plot  # Add by Steven Robot
 import time                                  # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
-from util import LossHistory                 # Add by Steven Robot
+from algorithm_learning.util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
-import ntm                                   # Add by Steven Robot
-# import lstm2ntm                              # Add by Steven Robot
-from keras.layers import Input, Dense
-from keras.models import Model
+from keras.optimizers import Adam            # Add by Steven Robot
+import sys                                   # Add by Steven Robot
 
 
-# Parameters for the model to train copying algorithm
-# TRAINING_SIZE = 1024000
-TRAINING_SIZE = 128000
+# Parameters for the model to train copying algorithm_learning
+TRAINING_SIZE = 3*1024000
+# TRAINING_SIZE = 10240
+# TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
 INPUT_DIMENSION_SIZE = 6
 ITEM_SIZE = 3
 MAX_EPISODE_SIZE = 6
 MAX_INPUT_LENGTH = (ITEM_SIZE+1) * (MAX_EPISODE_SIZE+2)
 
+
 # Try replacing SimpleRNN, GRU, or LSTM
 # RNN = recurrent.SimpleRNN
 # RNN = recurrent.GRU
-# RNN = recurrent.LSTM
-# RNN = lstm2ntm.NTM
-RNN = ntm.NTM
+RNN = recurrent.LSTM
 HIDDEN_SIZE = 256
 LAYERS = 2
 # LAYERS = MAX_REPEAT_TIMES
-# BATCH_SIZE = 1024
-BATCH_SIZE = 128
-MEMORY_DIM = 128
-MEMORY_SIZE = 20
-CONTROLLER_OUTPUT_DIM = 100
-LOCATION_SHIFT_RANGE = 1
-NUM_READ_HEAD = 1
-NUM_WRITE_HEAD = 1
+BATCH_SIZE = 1024
+# BATCH_SIZE = 128
 
-FOLDER = "experiment_results/associative_recall_ntm/"
+folder_name = time.strftime('experiment_results/recall_lstm/%Y-%m-%d-%H-%M-%S/')
+# os.makedirs(folder_name)
+FOLDER = folder_name
 if not os.path.isdir(FOLDER):
     os.makedirs(FOLDER)
     print("create folder: %s" % FOLDER)
+
+start_time = time.time()
+sys_stdout = sys.stdout
+log_file = '%s/recall.log' % (folder_name)
+sys.stdout = open(log_file, 'a')
 
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -77,7 +76,7 @@ name_list.append("Target")
 name_list.append("Predict")
 show_matrix = visualization.PlotDynamicalMatrix(matrix_list, name_list)
 random_index = np.random.randint(1, 128, 20)
-for i in range(3):
+for i in range(20):
     matrix_list_update = []
     matrix_list_update.append(train_X[random_index[i]].transpose())
     matrix_list_update.append(train_Y[random_index[i]].transpose())
@@ -88,83 +87,48 @@ for i in range(3):
 print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Build model...')
-
-print('Input sequence...')
-input_sequence = Input(shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE), name="input_sequence")
-print('NTM...')
-ntm_out = RNN(
-    output_dim=MEMORY_DIM,
-    memory_dim=MEMORY_DIM,
-    memory_size=MEMORY_SIZE,
-    controller_output_dim=CONTROLLER_OUTPUT_DIM,
-    location_shift_range=LOCATION_SHIFT_RANGE,
-    num_read_head=NUM_READ_HEAD,
-    num_write_head=NUM_WRITE_HEAD,
+model = Sequential()
+# "Encode" the input sequence using an RNN, producing an output of HIDDEN_SIZE
+# note: in a situation where your input sequences have a variable length,
+# use input_shape=(None, nb_feature).
+model.add(RNN(
+    HIDDEN_SIZE,
+    input_shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE+2),
     init='glorot_uniform',
     inner_init='orthogonal',
+    activation='tanh',
     return_sequences=True,
     # activation='hard_sigmoid',
-    activation='tanh',
     # activation='sigmoid',
     W_regularizer=None,
     U_regularizer=None,
-    R_regularizer=None,
     b_regularizer=None,
     dropout_W=0.0,
-    dropout_U=0.0)(input_sequence)
-print('Output sequence...')
-output_sequence = Dense(
-    output_dim=INPUT_DIMENSION_SIZE+2,
-    activation='sigmoid',
-    name='output_sequence')(ntm_out)
-print('Model...')
-model = Model(input=input_sequence, output=output_sequence)
+    dropout_U=0.0))
 
-#
-# model = Sequential()
-# # "Encode" the input sequence using an RNN, producing an output of HIDDEN_SIZE
-# # note: in a situation where your input sequences have a variable length,
-# # use input_shape=(None, nb_feature).
-# model.add(RNN(
-#     input_shape=(MAX_INPUT_LENGTH, INPUT_DIMENSION_SIZE+2),
-#     # output_dim=INPUT_DIMENSION_SIZE+2,
-#     output_dim=MEMORY_DIM,
-#     memory_dim=MEMORY_DIM,
-#     memory_size=MEMORY_SIZE,
-#     controller_output_dim=CONTROLLER_OUTPUT_DIM,
-#     location_shift_range=LOCATION_SHIFT_RANGE,
-#     num_read_head=NUM_READ_HEAD,
-#     num_write_head=NUM_WRITE_HEAD,
-#     init='glorot_uniform',
-#     inner_init='orthogonal',
-#     return_sequences=True,
-#     # activation='hard_sigmoid',
-#     activation='tanh',
-#     # activation='sigmoid',
-#     W_regularizer=None,
-#     U_regularizer=None,
-#     R_regularizer=None,
-#     b_regularizer=None,
-#     dropout_W=0.0,
-#     dropout_U=0.0))
-#
-#
-# # # For the decoder's input, we repeat the encoded input for each time step
-# # # model.add(RepeatVector(MAX_INPUT_LENGTH))
-# # # The decoder RNN could be multiple layers stacked or a single layer
-# # for _ in range(LAYERS):
-# #     model.add(RNN(HIDDEN_SIZE, return_sequences=True))
-#
-# # For each of step of the output sequence, decide which character should be chosen
-# model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
-# # model.add(Activation('softmax'))
-# # model.add(Activation('hard_sigmoid'))
-# model.add(Activation('sigmoid'))
 
-print('Compile...')
+# For the decoder's input, we repeat the encoded input for each time step
+# model.add(RepeatVector(MAX_INPUT_LENGTH))
+# The decoder RNN could be multiple layers stacked or a single layer
+for _ in range(LAYERS):
+    model.add(RNN(HIDDEN_SIZE, return_sequences=True))
+
+# For each of step of the output sequence, decide which character should be chosen
+model.add(TimeDistributed(Dense(INPUT_DIMENSION_SIZE+2)))
+# model.add(Activation('softmax'))
+# model.add(Activation('hard_sigmoid'))
+model.add(Activation('sigmoid'))
+
+lr = 0.0001
+beta_1 = 0.9
+beta_2 = 0.999
+epsilon = 1e-8
+ADAM_ = Adam(lr=lr, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon)
+
 model.compile(loss='binary_crossentropy',
               # loss='mse',
-              optimizer='adam',
+              # optimizer='adam',
+              optimizer=ADAM_,
               metrics=['accuracy'])
 
 print()
@@ -181,7 +145,9 @@ print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print("Training...")
 # Train the model each generation and show predictions against the
 # validation dataset
-for iteration in range(1, 200):
+losses = []
+acces = []
+for iteration in range(1, 2):
     print()
     print('-' * 78)
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -193,14 +159,16 @@ for iteration in range(1, 200):
     model.fit(train_X,
               train_Y,
               batch_size=BATCH_SIZE,
-              nb_epoch=30,
-              # nb_epoch=1,
+              # nb_epoch=30,
+              nb_epoch=1,
               callbacks=[check_pointer, history],
               validation_data=(valid_X, valid_Y))
-    print(len(history.losses))
-    print(history.losses)
-    print(len(history.acces))
-    print(history.acces)
+    # print(len(history.losses))
+    # print(history.losses)
+    # print(len(history.acces))
+    # print(history.acces)
+    losses.append(history.losses)
+    acces.append(history.acces)
 
     ###
     # Select 20 samples from the validation set at random so we can
@@ -219,3 +187,30 @@ for iteration in range(1, 200):
         show_matrix.save(FOLDER+"associative_data_predict_%3d.png"%iteration)
 
 show_matrix.close()
+print("\nlosses")
+print(len(losses))
+print(len(losses[0]))
+# print(losses.shape)
+sample_num = 1
+for los in losses:
+    for lo in los:
+        if sample_num % 100 == 1:
+            print("(%d, %f)" % (sample_num, lo))
+        sample_num = sample_num + 1
+# print(losses)
+
+print("\naccess")
+print(len(acces))
+print(len(acces[0]))
+# print(acces.shape)
+sample_num = 1
+for acc in acces:
+    for ac in acc:
+        if sample_num % 100 == 1:
+            print("(%d, %f)" % (sample_num, ac))
+        sample_num = sample_num + 1
+# print(acces)
+
+print ("task took %.3fs" % (float(time.time()) - start_time))
+sys.stdout.close()
+sys.stdout = sys_stdout

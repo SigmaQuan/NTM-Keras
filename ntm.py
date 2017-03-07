@@ -27,7 +27,7 @@ class NTM(Recurrent):
         # units to drop for connections between read content to controller.
         """
         Neural Turing Machines - Alex Graves et. al, 2014.
-            For a step-by-step description of the algorithm, see
+            For a step-by-step description of the algorithm_learning, see
             [this paper](https://arxiv.org/pdf/1410.5401.pdf).
         # Arguments
         :param output_dim: dimension of the internal projections and the

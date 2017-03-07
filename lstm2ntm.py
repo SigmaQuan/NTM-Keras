@@ -14,7 +14,7 @@ import head
 class NTM(Recurrent):
     '''Long-Short Term Memory unit - Hochreiter 1997.
 
-    For a step-by-step description of the algorithm, see
+    For a step-by-step description of the algorithm_learning, see
     [this tutorial](http://deeplearning.net/tutorial/lstm.html).
 
     # Arguments
