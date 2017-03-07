@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-'''An implementation of learning copying algorithm with RNN (basic RNN, LSTM,
+"""An implementation of learning copying algorithm with RNN (basic RNN, LSTM,
 GRU).
 Input sequence length: "1 ~ 20: (1*2+1)=3 ~ (20*2+1)=41"
 Input dimension: "4"
 Repeat times: "5"
 Output sequence length: equal to input sequence length * repeat times.
 Output dimension: equal to input dimension.
-'''
+"""
 
 from __future__ import print_function
 from keras.models import Sequential
