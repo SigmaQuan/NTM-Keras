@@ -439,16 +439,17 @@ class PlotDynamicalMatrix4Repeat:
         # plt.text(60, -30, title, ha='center')
         # # plt.title(title)
         #
-
-        # add text
-        plt.text(-2, -11.3, name_list[0], ha='right')
-        plt.text(-2, -4.8, name_list[1], ha='right')
-        plt.text(-2, 2, name_list[2], ha='right')
-        plt.text(5.5, 6, 'Time $\longrightarrow$', ha='right')
-
-        title = "Repeat Times = %d"%repeat_times
-        plt.text(30, -15, title, ha='center')
-        # plt.title(title)
+        # comment 20170307  ---------------------------------------------------
+        # # add text
+        # plt.text(-2, -11.3, name_list[0], ha='right')
+        # plt.text(-2, -4.8, name_list[1], ha='right')
+        # plt.text(-2, 2, name_list[2], ha='right')
+        # plt.text(5.5, 6, 'Time $\longrightarrow$', ha='right')
+        #
+        # title = "Repeat Times = %d"%repeat_times
+        # plt.text(30, -15, title, ha='center')
+        # # plt.title(title)
+        # comment 20170307  ---------------------------------------------------
 
         # set tick labels invisible
         make_tick_labels_invisible(plt.gcf())
