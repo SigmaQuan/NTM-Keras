@@ -43,7 +43,7 @@ import time                                  # Add by Steven Robot
 from keras.layers import Merge               # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
-from util import LossHistory                 # Add by Steven Robot
+from algorithm.util import LossHistory                 # Add by Steven Robot
 import cPickle as pickle
 import random
 import os

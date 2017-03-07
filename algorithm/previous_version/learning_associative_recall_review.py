@@ -19,7 +19,7 @@ from keras.utils.visualize_util import plot  # Add by Steven Robot
 import time                                  # Add by Steven Robot
 from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.callbacks import Callback         # Add by Steven Robot
-from util import LossHistory                 # Add by Steven Robot
+from algorithm.util import LossHistory                 # Add by Steven Robot
 import os                                    # Add by Steven Robot
 from keras.optimizers import Adam            # Add by Steven Robot
 import sys                                   # Add by Steven Robot
