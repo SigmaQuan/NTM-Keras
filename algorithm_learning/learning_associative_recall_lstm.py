@@ -18,16 +18,18 @@ from keras.callbacks import ModelCheckpoint  # Add by Steven Robot
 from keras.utils.visualize_util import plot  # Add by Steven Robot
 from keras.optimizers import Adam            # Add by Steven Robot
 from util import LossHistory                 # Add by Steven Robot
-import visualization                         # Add by Steven Robot
+from keras.callbacks import LambdaCallback   # Add by Steven Robot
 import dataset                               # Add by Steven Robot
 import time                                  # Add by Steven Robot
 import os                                    # Add by Steven Robot
 import sys                                   # Add by Steven Robot
+import matplotlib.pyplot as plt
+import visualization
 
 
 # Parameters for the model to train copying algorithm_learning
-TRAINING_SIZE = 1024000
-# TRAINING_SIZE = 10240
+# TRAINING_SIZE = 1024000
+TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000
 # TRAINING_SIZE = 1280
 INPUT_DIMENSION_SIZE = 6
@@ -156,6 +158,9 @@ for iteration in range(1, 3):
     print(time.strftime('%Y-%m-%d %H:%M:%S'))
     print('Iteration', iteration)
     history = LossHistory()
+    plot_loss_callback = LambdaCallback(
+        on_epoch_end=lambda epoch, logs:
+        plt.plot(np.arange((epoch, 1)), logs['loss']))
     check_pointer = ModelCheckpoint(
         filepath=FOLDER+"associative_recall_model_weights.hdf5",
         verbose=1, save_best_only=True)
@@ -163,8 +168,8 @@ for iteration in range(1, 3):
               train_Y,
               batch_size=BATCH_SIZE,
               # nb_epoch=30,
-              nb_epoch=1,
-              callbacks=[check_pointer, history],
+              nb_epoch=10,
+              callbacks=[check_pointer, history, plot_loss_callback],  #, plot_loss_callback
               validation_data=(valid_X, valid_Y))
     # print(len(history.losses))
     # print(history.losses)

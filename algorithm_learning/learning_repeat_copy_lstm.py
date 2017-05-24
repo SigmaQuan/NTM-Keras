@@ -25,14 +25,15 @@ from util import LossHistory                 # Add by Steven Robot
 import time                                  # Add by Steven Robot
 import os                                    # Add by Steven Robot
 import sys                                   # Add by Steven Robot
-
+from keras_tqdm import TQDMNotebookCallback  # Add by Steven Robot
 
 
 # Parameters for the model to train copying algorithm_learning
-TRAINING_SIZE = 6*1024000
+# TRAINING_SIZE = 4*1024000
+# TRAINING_SIZE = 1024000
 # TRAINING_SIZE = 10240
 # TRAINING_SIZE = 128000
-# TRAINING_SIZE = 1280
+TRAINING_SIZE = 1280
 # INPUT_DIMENSION_SIZE = 4 + 1
 # INPUT_DIMENSION_SIZE = 7 + 1
 INPUT_DIMENSION_SIZE = 8 + 1
@@ -64,9 +65,9 @@ if not os.path.isdir(FOLDER):
     print("create folder: %s" % FOLDER)
 
 start_time = time.time()
-sys_stdout = sys.stdout
-log_file = '%s/recall.log' % (folder_name)
-sys.stdout = open(log_file, 'a')
+# sys_stdout = sys.stdout
+# log_file = '%s/recall.log' % (folder_name)
+# sys.stdout = open(log_file, 'a')
 
 
 print()
@@ -163,6 +164,8 @@ print("Model architecture")
 plot(model, show_shapes=True, to_file=FOLDER+"lstm_repeat_copying.png")
 print("Model summary")
 print(model.summary())
+print("Model config")
+print(model.get_config())
 print("Model parameter count")
 print(model.count_params())
 
@@ -181,12 +184,15 @@ for iteration in range(1, 3):
     history = LossHistory()
     check_pointer = ModelCheckpoint(
         filepath=FOLDER+"repeat_copying_model_weights.hdf5",
-        verbose=1, save_best_only=True)
+        verbose=2, save_best_only=True)
     model.fit([train_X, train_repeats_times],
               train_Y,
               batch_size=BATCH_SIZE,
+              verbose=2,
+              nb_epoch=10,
               # nb_epoch=30,
-              nb_epoch=1,
+              # nb_epoch=1,
+              # callbacks=[TQDMNotebookCallback()],
               callbacks=[check_pointer, history],
               validation_data=([valid_X, valid_repeats_times], valid_Y))
     # print(len(history.losses))
@@ -270,5 +276,5 @@ for acc in acces:
 
 print ("task took %.3fs" % (float(time.time()) - start_time))
 sys.stdout.close()
-sys.stdout = sys_stdout
+# sys.stdout = sys_stdout
 
