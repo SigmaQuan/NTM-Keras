@@ -139,7 +139,7 @@ import struct
 # set random values of dependency matrix
 import numpy as np
 
-tau = 16 + 1
+tau = 12 + 1
 
 dependency_matrix = np.ones(shape=(tau, tau), dtype=int)
 print(dependency_matrix)
@@ -148,9 +148,7 @@ for y in range(tau-1, 0, -1):
     for x in range(1, y+1):
         dependency_matrix[x][y] = np.random.randint(0, 2)
 
-print(dependency_matrix)
-
-
+# print(dependency_matrix)
 for x in xrange(tau):
     # print("\% x = %d" % x)
     for y in xrange(tau):
