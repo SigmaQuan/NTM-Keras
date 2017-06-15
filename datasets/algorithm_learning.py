@@ -7,18 +7,6 @@ from utils import initialize_random_seed
 initialize_random_seed()
 
 
-def generate_weightings(row, col):
-    write_weightings = np.zeros((row, col), dtype=np.float32)
-    read_weightings = np.zeros((row, col), dtype=np.float32)
-    r = (row * 3) / 4
-    for i in np.arange(0, col/2):
-        write_weightings[r][i] = 1
-        read_weightings[r][i + col/2] = 1
-        r -= 1
-
-    return write_weightings, read_weightings
-
-
 def generate_copy_sample(dimension, sequence_length):
     """Generate one sample of copy algorithm.
 
