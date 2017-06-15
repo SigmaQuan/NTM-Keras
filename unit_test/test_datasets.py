@@ -1,22 +1,22 @@
-import dataset
 import visualization
 import numpy as np
+import datasets
 
 
 def test_copy_data_generation():
-    input_sequence, output_sequence = dataset.generate_copy_data(8, 10)
+    input_sequence, output_sequence = datasets.generate_copy_sample(8, 10)
     print input_sequence
     print output_sequence
-    input_sequence, output_sequence = dataset.generate_copy_data(8, 20)
+    input_sequence, output_sequence = datasets.generate_copy_sample(8, 20)
     print input_sequence
     print output_sequence
-    input_sequence, output_sequence = dataset.generate_copy_data(8, 30)
+    input_sequence, output_sequence = datasets.generate_copy_sample(8, 30)
     print input_sequence
     print output_sequence
-    input_sequence, output_sequence = dataset.generate_copy_data(8, 50)
+    input_sequence, output_sequence = datasets.generate_copy_sample(8, 50)
     print input_sequence
     print output_sequence
-    input_sequence, output_sequence = dataset.generate_copy_data(8, 120)
+    input_sequence, output_sequence = datasets.generate_copy_sample(8, 120)
     print input_sequence
     print output_sequence
 
@@ -24,7 +24,7 @@ def test_copy_data_generation():
 def show_repeat_copy_data_generation():
     print('Generating data...')
     input_sequence, output_sequence, repeat_times = \
-        dataset.generate_repeat_copy_data_set(7, 10, 100, 10)
+        datasets.generate_repeat_copy_data_set(7, 10, 100, 10)
     print(output_sequence[0].transpose().shape)
 
     for i in range(100):
@@ -41,7 +41,7 @@ def show_repeat_copy_data_generation():
 def test_repeat_copy_data_generation():
     print('Generating data...')
     input_sequence, output_sequence, repeat_times = \
-        dataset.generate_repeat_copy_data_set(4, 10, 20, 20)
+        datasets.generate_repeat_copy_data_set(4, 10, 20, 20)
 
     print(input_sequence.shape)
     matrix_list = []
@@ -75,7 +75,7 @@ def test_associative_recall_data():
     # print(item)
 
     print('Generating data sets...')
-    input_sequence, output_sequence = dataset.generate_associative_recall_data_set(
+    input_sequence, output_sequence = datasets.generate_associative_recall_data_set(
         INPUT_DIMENSION_SIZE, ITEM_SIZE, MAX_EPISODE_SIZE, TRAINING_SIZE)
     # print input_sequence
     # print output_sequence
@@ -99,11 +99,11 @@ def test_n_gram_data():
     a = 0.5
     b = 0.5
     n = 6
-    look_up_table = dataset.generate_probability_of_n_gram_by_beta(a, b, n)
+    look_up_table = datasets.generate_probability_of_n_gram_by_beta(a, b, n)
     sequence_length = 50
     example_size = 100
     # print(look_up_table)
-    train_X, train_Y = dataset.generate_dynamical_n_gram_data_set(
+    train_X, train_Y = datasets.generate_dynamical_n_gram_data_set(
         look_up_table, n, sequence_length, example_size)
     # print(train_X)
     show_matrix = visualization.PlotDynamicalMatrix4NGram(
@@ -127,7 +127,7 @@ def test_priority_sort_data():
     output_matrix = np.zeros((output_sequence_length+1, input_size+2), dtype=np.float32)
 
     train_x_seq, train_y_seq = \
-        dataset.generate_associative_priority_sort_data_set(
+        datasets.generate_priority_sort_data_set(
             input_size,
             input_sequence_length,
             output_sequence_length,

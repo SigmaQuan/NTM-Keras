@@ -61,7 +61,7 @@ print()
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 print('Generating data sets...')
 train_x_seq, train_y_seq = \
-    dataset.generate_associative_priority_sort_data_set(
+    dataset.generate_priority_sort_data_set(
         INPUT_DIMENSION_SIZE,
         INPUT_SEQUENCE_LENGTH,
         PRIORITY_OUTPUT_SEQUENCE_LENGTH,
@@ -71,7 +71,7 @@ train_x_seq, train_y_seq = \
 print(train_x_seq.shape)
 print(train_y_seq.shape)
 validation_x_seq, validation_y_seq = \
-    dataset.generate_associative_priority_sort_data_set(
+    dataset.generate_priority_sort_data_set(
         INPUT_DIMENSION_SIZE,
         INPUT_SEQUENCE_LENGTH,
         PRIORITY_OUTPUT_SEQUENCE_LENGTH,

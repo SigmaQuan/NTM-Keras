@@ -31,11 +31,11 @@ def test_show_multi_matrix():
 
 
 def test_show_copy_data():
-    input_sequence_10, output_sequence_10 = dataset.generate_copy_data(8, 10)
-    input_sequence_20, output_sequence_20 = dataset.generate_copy_data(8, 20)
-    input_sequence_30, output_sequence_30 = dataset.generate_copy_data(8, 30)
-    input_sequence_50, output_sequence_50 = dataset.generate_copy_data(8, 50)
-    input_sequence_120, output_sequence_120 = dataset.generate_copy_data(8, 120)
+    input_sequence_10, output_sequence_10 = dataset.generate_copy_sample(8, 10)
+    input_sequence_20, output_sequence_20 = dataset.generate_copy_sample(8, 20)
+    input_sequence_30, output_sequence_30 = dataset.generate_copy_sample(8, 30)
+    input_sequence_50, output_sequence_50 = dataset.generate_copy_sample(8, 50)
+    input_sequence_120, output_sequence_120 = dataset.generate_copy_sample(8, 120)
 
     input_sequence_10 = input_sequence_10.transpose()
     output_sequence_10 = output_sequence_10.transpose()
@@ -86,11 +86,11 @@ def test_show_copy_data():
 
 
 def test_show_memory_of_copy_task():
-    input_sequence, output_sequence = dataset.generate_copy_data(8, 20)
+    input_sequence, output_sequence = dataset.generate_copy_sample(8, 20)
     input_sequence = input_sequence.transpose()
     output_sequence = output_sequence.transpose()
-    adds = dataset.generate_random_binomial(16, 40)
-    reads = dataset.generate_random_binomial(16, 40)
+    adds = dataset.generate_random_binomial_(16, 40)
+    reads = dataset.generate_random_binomial_(16, 40)
     write_weightings, read_weightings = dataset.generate_weightings(36, 40)
     image_file = "image/figure_6.png"
     visualization.show_memory_of_copy_task(input_sequence, output_sequence,

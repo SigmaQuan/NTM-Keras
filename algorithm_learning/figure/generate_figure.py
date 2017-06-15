@@ -99,7 +99,7 @@ def show_algorithm_learning_example():
     sequence_length_copy = 10
     repeat_times = 15
     input_sequence_copy, output_sequence_copy = \
-        dataset.generate_repeat_copy_data(
+        dataset.generate_repeat_copy_sample(
             input_size_copy, sequence_length_copy, repeat_times)
     print(input_sequence_copy.shape)
     print(output_sequence_copy.shape)
@@ -112,7 +112,7 @@ def show_algorithm_learning_example():
     input_sequence_recall = np.zeros(input_sequence_copy.shape)
     output_sequence_recall = np.zeros(output_sequence_copy.shape)
     input_sequence_recall_, output_sequence_recall_ = \
-        dataset.generate_associative_recall_data(
+        dataset.generate_associative_recall_sample(
             input_size_recall, item_size, episode_size, max_episode_size)
     input_sequence_recall[:-1] = input_sequence_recall_
     output_sequence_recall[:-1] = output_sequence_recall_
@@ -127,7 +127,7 @@ def show_algorithm_learning_example():
     # input_sequence_sort = np.zeros(input_sequence_copy.shape)
     # output_sequence_sort = np.zeros(output_sequence_copy.shape)
     input_sequence_sort_, input_priority_, output_sequence_sort_, output_priority_ = \
-        dataset.generate_associative_priority_sort_data(
+        dataset.generate_priority_sort_sample(
             input_size_sort,
             input_sequence_length,
             output_sequence_length,
