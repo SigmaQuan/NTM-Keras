@@ -1,4 +1,7 @@
 import struct
+import numpy as np
+
+import random
 
 #
 # id_i = 0
@@ -115,43 +118,22 @@ import struct
 #             number = 1
 
 
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from mpl_toolkits.mplot3d import Axes3D
-#
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# N = np.arange(100, 4000, 20)
-# p = np.arange(0.01, 0.99, 0.02)
-# N, p = np.meshgrid(N, p)
-# # R = np.sqrt(N ** 2 + p ** 2)
-# # D = np.sin(R)
-# D = N/p
-#
-# ax.plot_surface(N, p, D, rstride=1, cstride=1, cmap=plt.cm.hot)
-# ax.contourf(N, p, D, zdir='z', offset=-2, cmap=plt.cm.hot)
-# # ax.set_zlim(-2, 2)
-#
-# # savefig('../figures/plot3d_ex.png',dpi=48)
-# plt.show()
-
-
-# set random values of dependency matrix
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
-tau = 12 + 1
+fig = plt.figure()
+ax = Axes3D(fig)
+N = np.arange(100, 4000, 20)
+p = np.arange(0.01, 0.99, 0.02)
+N, p = np.meshgrid(N, p)
+# R = np.sqrt(N ** 2 + p ** 2)
+# D = np.sin(R)
+D = N/p
 
-dependency_matrix = np.ones(shape=(tau, tau), dtype=int)
-print(dependency_matrix)
+ax.plot_surface(N, p, D, rstride=1, cstride=1, cmap=plt.cm.hot)
+ax.contourf(N, p, D, zdir='z', offset=-2, cmap=plt.cm.hot)
+# ax.set_zlim(-2, 2)
 
-for y in range(tau-1, 0, -1):
-    for x in range(1, y+1):
-        dependency_matrix[x][y] = np.random.randint(0, 2)
-
-# print(dependency_matrix)
-for x in xrange(tau):
-    # print("\% x = %d" % x)
-    for y in xrange(tau):
-        if x > 0 and y > 0:
-            print('(%d, %d) [%d]' % (x, y, dependency_matrix[x][y]))
-    print('\n')
+# savefig('../figures/plot3d_ex.png',dpi=48)
+plt.show()
